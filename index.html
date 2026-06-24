@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POD Management Tool — Palam Vihar RPC</title>
+<title>Delhivery POD Tool — Palam Vihar RPC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -39,10 +39,10 @@ body{font-family:'Inter',sans-serif;background:var(--slate);color:var(--text);mi
 .h-text .h-sub{font-size:10px;color:#6E8FAA;letter-spacing:.6px;font-weight:500;text-transform:uppercase;margin-top:1px}
 .h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
 .h-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:600;color:#fff}
-.h-step-pill{background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.35);border-radius:20px;padding:3px 12px;font-size:10px;font-weight:700;color:#F5C050;letter-spacing:.5px;text-transform:uppercase}
+.h-step-pill{display:none}
 
 /* ══ STEP INDICATOR ═══════════════════════════════════════ */
-.steps{display:flex;align-items:center;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto}
+.steps{display:none}
 .step{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.3px;white-space:nowrap;border-bottom:2.5px solid transparent;cursor:default;transition:all .2s;text-transform:uppercase}
 .step.done{color:var(--green2)}
 .step.active{color:var(--blue2);border-bottom-color:var(--blue2)}
@@ -208,6 +208,13 @@ td.tc{text-align:center}
   .status-tabs{flex-wrap:wrap}
   .stab{min-width:50%}
 }
+
+/* keyboard focus row */
+tbody tr.kb-focus td { background: #C8DCF8 !important; outline: 2px solid var(--blue2); outline-offset: -2px; }
+tbody tr.kb-focus.rej-row td { background: #FFBBCC !important; }
+/* upload zone focusable */
+.upload-zone:focus { outline: 2px solid var(--blue2); outline-offset: 2px; }
+
 </style>
 </head>
 <body>
@@ -216,23 +223,16 @@ td.tc{text-align:center}
 <div class="header">
   <div class="h-icon">🚚</div>
   <div class="h-text">
-    <div class="h-title">POD Management Tool</div>
-    <div class="h-sub">Palam Vihar RPC &nbsp;·&nbsp; Delivery Operations</div>
+    <div class="h-title">Delhivery POD Management Tool</div>
+    <div class="h-sub">Palam Vihar RPC &nbsp;·&nbsp; Delhivery Operations</div>
   </div>
   <div class="h-right">
-    <span class="h-step-pill" id="stepPill">Step 1 of 3</span>
+    <span class="h-step-pill" style="cursor:pointer;opacity:.7" title="Keyboard shortcuts" onclick="toast('← → Tabs | ↑ ↓ Rows | Enter Select | Del Delete | Ctrl+U Upload | Ctrl+D Download | Ctrl+S Save | Ctrl+N New FE','info',5000)">⌨ Shortcuts</span>
     <span class="h-badge" id="rowBadge" style="display:none">0 rows</span>
   </div>
 </div>
 
-<!-- STEP INDICATOR -->
-<div class="steps">
-  <div class="step active" id="step1"><span class="sn">1</span> Setup & Upload</div>
-  <span class="step-arrow">›</span>
-  <div class="step" id="step2"><span class="sn">2</span> Filter & Review</div>
-  <span class="step-arrow">›</span>
-  <div class="step" id="step3"><span class="sn">3</span> Export</div>
-</div>
+
 
 <div class="page">
 
@@ -240,25 +240,34 @@ td.tc{text-align:center}
 <div class="card" id="setupCard">
   <div class="card-header">
     <div>
-      <div class="card-eyebrow">Step 1</div>
-      <div class="card-title">Setup Details &amp; Upload File</div>
-      <div class="card-sub">Enter FE name and DSP ID, then upload the Excel file</div>
+      <div class="card-title">Daily POD Entry</div>
     </div>
   </div>
   <div class="card-body">
     <div class="setup-grid">
       <div class="field-group">
-        <label class="field-label">👤 FE Name</label>
+        <label class="field-label">FE Name</label>
         <input class="field-input" type="text" id="feName" placeholder="Field Executive name">
       </div>
       <div class="field-group">
-        <label class="field-label">🏷️ DSP ID</label>
+        <label class="field-label">DSP ID</label>
         <input class="field-input" type="text" id="dspId" placeholder="e.g. DLEC0001">
       </div>
       <div class="field-group">
-        <label class="field-label">📅 Date</label>
+        <label class="field-label">Date</label>
         <input class="field-input" type="date" id="dateVal">
       </div>
+    </div>
+
+    <!-- FE SESSION LIST -->
+    <div id="feSessionBar" style="display:none;margin-bottom:14px;background:var(--slate);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)">📋 Today's FE Session</span>
+        <span id="feTotalBadge" style="background:var(--blue2);color:#fff;border-radius:10px;padding:1px 10px;font-size:11px;font-weight:700">0 FE | 0 pkts</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addNewFE()">➕ Add New FE</button>
+        <button class="btn btn-green btn-sm" onclick="downloadAllFE()">⬇ Download All FE Data</button>
+      </div>
+      <div id="feChipList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
     <div class="upload-zone" id="uploadZone"
       onclick="document.getElementById('fileInput').click()"
@@ -266,8 +275,8 @@ td.tc{text-align:center}
       ondragleave="this.classList.remove('drag')"
       ondrop="handleDrop(event)">
       <div class="uz-icon">📂</div>
-      <div class="uz-title">Click to upload or drag &amp; drop</div>
-      <div class="uz-sub">First sheet auto-loads — all formats supported</div>
+      <div class="uz-title">File Upload karo</div>
+      <div class="uz-sub">Koi bhi format — xlsx, csv, xls, ods</div>
       <div class="fmt-row">
         <span class="fmt">.xlsx</span><span class="fmt">.xls</span><span class="fmt">.csv</span><span class="fmt">.tsv</span><span class="fmt">.ods</span>
       </div>
@@ -312,8 +321,7 @@ td.tc{text-align:center}
   <div class="chip-section" id="remarkSection" style="display:none">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div>
-        <div class="card-eyebrow">Remark Filter</div>
-        <div class="card-title" style="margin-top:2px">Pending — Remark-wise Breakdown</div>
+        <div class="card-title">Remark-wise Breakdown</div>
       </div>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
         <span id="remarkFilterLabel" style="font-size:11.5px;color:var(--text3)">Click a remark to filter</span>
@@ -379,12 +387,113 @@ td.tc{text-align:center}
    STATE
 ══════════════════════════════════════════════════════════ */
 let allData = [];
-let statusFilter = 'all';   // 'all' | 'pending' | 'dispatched' | 'rto' | 'dto'
-let activeRemark = null;    // null = all pending, string = specific remark
+let statusFilter = 'all';
+let activeRemark = null;
+let currentFE = null; // {name, dspId, date}
+
+// SESSION: array of FE objects {name, dspId, date, rows[]}
+// Stored in sessionStorage — clears when tab is closed, survives refresh
+let session = [];
 
 const REJ_KW = ['reject but intact','reject but','intact'];
 
 document.getElementById('dateVal').valueAsDate = new Date();
+
+/* ── SESSION STORAGE ────────────────────────────────────── */
+function saveSession() {
+  try { sessionStorage.setItem('pod_session', JSON.stringify(session)); } catch(e){}
+}
+function loadSession() {
+  try {
+    const raw = sessionStorage.getItem('pod_session');
+    if (raw) { session = JSON.parse(raw); refreshFEBar(); }
+  } catch(e) { session = []; }
+}
+loadSession(); // load on page start
+
+function refreshFEBar() {
+  const bar = document.getElementById('feSessionBar');
+  const chipList = document.getElementById('feChipList');
+  const badge = document.getElementById('feTotalBadge');
+  if (!session.length) { bar.style.display='none'; return; }
+  bar.style.display = 'block';
+  const totalPkts = session.reduce((s,fe)=>s+fe.rows.length,0);
+  badge.textContent = session.length+' FE | '+totalPkts+' pkts';
+  chipList.innerHTML = session.map((fe,i) => `
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px">
+      <span style="font-weight:700;color:var(--navy2)">${esc(fe.dspId)}</span>
+      <span style="color:var(--text2)">${esc(fe.name)}</span>
+      <span style="background:var(--blue2);color:#fff;border-radius:8px;padding:1px 8px;font-size:10.5px;font-weight:700">${fe.rows.length} pkts</span>
+      <button onclick="removeFE(${i})" style="border:none;background:none;color:#aaa;cursor:pointer;font-size:12px;padding:0 2px" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+function saveFEToSession() {
+  if (!allData.length || !currentFE) return;
+  const fe = document.getElementById('feName').value.trim();
+  const dsp = document.getElementById('dspId').value.trim();
+  const date = document.getElementById('dateVal').value;
+  if (!fe || !dsp) { toast('FE Name aur DSP ID daalo pehle','err'); return; }
+  // Update or add
+  const existing = session.findIndex(s => s.dspId === dsp);
+  const entry = { name: fe, dspId: dsp, date: date, rows: allData.slice() };
+  if (existing >= 0) session[existing] = entry;
+  else session.push(entry);
+  saveSession();
+  refreshFEBar();
+  toast('✓ '+fe+' ('+allData.length+' pkts) session me save hua','ok');
+}
+
+function addNewFE() {
+  // Save current FE first if data loaded
+  if (allData.length) saveFEToSession();
+  // Reset for new FE
+  allData = []; statusFilter = 'all'; activeRemark = null; currentFE = null;
+  document.getElementById('feName').value = '';
+  document.getElementById('dspId').value = '';
+  document.getElementById('mainSection').style.display = 'none';
+  document.getElementById('rowBadge').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  setSteps(1);
+  toast('New FE ke liye DSP ID daalo aur file upload karo','info');
+}
+
+function removeFE(i) {
+  session.splice(i,1);
+  saveSession();
+  refreshFEBar();
+  toast('FE removed from session','info');
+}
+
+function downloadAllFE() {
+  if (!session.length) { toast('Koi FE session nahi hai','err'); return; }
+  const wb = XLSX.utils.book_new();
+  // Combined sheet
+  const allRows = [['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']];
+  session.forEach(fe => {
+    fe.rows.filter(r=>r.status==='pending').forEach(r => {
+      allRows.push([fe.date, fe.dspId, r.waybill, r.client, r.order, r.remark, fe.name]);
+    });
+  });
+  const ws = XLSX.utils.aoa_to_sheet(allRows);
+  ws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
+  XLSX.utils.book_append_sheet(wb, ws, 'All FE Pending');
+  // Per-FE sheets
+  session.forEach(fe => {
+    const feRows = [['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']];
+    fe.rows.filter(r=>r.status==='pending').forEach(r => {
+      feRows.push([fe.date, fe.dspId, r.waybill, r.client, r.order, r.remark, fe.name]);
+    });
+    const fws = XLSX.utils.aoa_to_sheet(feRows);
+    fws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
+    const shName = (fe.dspId||fe.name).replace(/[^a-zA-Z0-9]/g,'_').slice(0,28);
+    XLSX.utils.book_append_sheet(wb, fws, shName);
+  });
+  const date = document.getElementById('dateVal').value || 'today';
+  XLSX.writeFile(wb, 'All_FE_POD_'+date+'.xlsx');
+  toast('✓ All FE data downloaded','ok');
+}
+
 
 /* ── UTILS ─────────────────────────────────────────────── */
 function toast(msg, type='info', d=3000){
@@ -472,6 +581,7 @@ function processRows(rows){
 
   if(!allData.length){ toast('No valid rows found','err'); return; }
 
+  currentFE = { name: document.getElementById('feName').value, dspId: document.getElementById('dspId').value };
   statusFilter='all'; activeRemark=null;
   document.getElementById('mainSection').style.display='block';
   document.getElementById('rowBadge').textContent=allData.length+' rows';
@@ -606,9 +716,11 @@ function renderActionBar(){
   if(isPending){
     left+=`<button class="btn btn-green" onclick="downloadExcel()">⬇ Download Excel</button>`;
     left+=`<button class="btn btn-primary" onclick="copyTable()">📋 Copy Table</button>`;
+    left+=`<button class="btn btn-amber" onclick="saveFEToSession()">💾 Save FE & Add Next</button>`;
   } else {
     left+=`<button class="btn btn-green" onclick="downloadExcel()">⬇ Download Excel</button>`;
     left+=`<button class="btn btn-primary" onclick="copyTable()">📋 Copy Table</button>`;
+    left+=`<button class="btn btn-amber" onclick="saveFEToSession()">💾 Save FE & Add Next</button>`;
   }
 
   if(selN>0){
@@ -734,8 +846,8 @@ function copyTable(){
   const dspInput=document.getElementById('dspId').value.trim();
   const date=document.getElementById('dateVal').value||'';
 
-  // Pure data only — no header, no DSP group row, DSP only on first row
-  let txt='';
+  // Flat list — DSP only on first row
+  let txt='Date\tDSP ID\tAWB Number\tClient\tOrder ID\tRemark\tFE Name\n';
   data.forEach((r,idx)=>{
     txt+=`${date}\t${idx===0?(dspInput||''):''}\t${r.waybill}\t${r.client}\t${r.order}\t${r.remark}\t${fe}\n`;
   });
@@ -761,15 +873,7 @@ function copyTable(){
 }
 
 /* ── STEPS ───────────────────────────────────────────────── */
-function setSteps(active){
-  for(let i=1;i<=3;i++){
-    const el=document.getElementById('step'+i);
-    el.classList.remove('active','done');
-    if(i<active) el.classList.add('done');
-    else if(i===active) el.classList.add('active');
-  }
-  document.getElementById('stepPill').textContent='Step '+active+' of 3';
-}
+function setSteps(active){ /* removed */ }
 
 /* ── CLEAR ALL ───────────────────────────────────────────── */
 function clearAll(){
@@ -781,6 +885,153 @@ function clearAll(){
   setSteps(1);
   toast('Cleared — ready for new upload','info');
 }
+
+
+/* ── ARROW KEY NAVIGATION ───────────────────────────────── */
+let focusedRowIdx = -1;
+const TABS = ['all','pending','dispatched','rto','dto'];
+
+function getFocusableRows() {
+  return Array.from(document.querySelectorAll('#mainBody tr[data-id]'));
+}
+
+function highlightRow(idx) {
+  const rows = getFocusableRows();
+  rows.forEach(r => r.classList.remove('kb-focus'));
+  if (idx >= 0 && idx < rows.length) {
+    rows[idx].classList.add('kb-focus');
+    rows[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    focusedRowIdx = idx;
+  } else {
+    focusedRowIdx = -1;
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  const tag = e.target.tagName;
+  const inInput = ['INPUT','TEXTAREA','SELECT'].includes(tag);
+
+  // Tab key — cycle through input fields only
+  if (e.key === 'Tab' && !e.shiftKey && !inInput) {
+    e.preventDefault();
+    document.getElementById('feName').focus();
+    return;
+  }
+
+  if (inInput) {
+    // Tab inside inputs — feName → dspId → dateVal → back to page
+    if (e.key === 'Tab') {
+      const fields = ['feName','dspId','dateVal'];
+      const curIdx = fields.indexOf(e.target.id);
+      if (curIdx !== -1) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          const prev = fields[curIdx - 1];
+          if (prev) document.getElementById(prev).focus();
+          else e.target.blur();
+        } else {
+          const next = fields[curIdx + 1];
+          if (next) document.getElementById(next).focus();
+          else { e.target.blur(); document.getElementById('uploadZone').focus(); }
+        }
+      }
+    }
+    if (e.key === 'Escape') e.target.blur();
+    return;
+  }
+
+  const ctrl = e.ctrlKey || e.metaKey;
+
+  switch(e.key) {
+    // ← → : switch status tabs
+    case 'ArrowLeft': {
+      e.preventDefault();
+      const cur = TABS.indexOf(statusFilter);
+      const prev = (cur - 1 + TABS.length) % TABS.length;
+      setStatusFilter(TABS[prev]);
+      focusedRowIdx = -1;
+      break;
+    }
+    case 'ArrowRight': {
+      e.preventDefault();
+      const cur = TABS.indexOf(statusFilter);
+      const next = (cur + 1) % TABS.length;
+      setStatusFilter(TABS[next]);
+      focusedRowIdx = -1;
+      break;
+    }
+
+    // ↑ ↓ : navigate rows
+    case 'ArrowUp': {
+      e.preventDefault();
+      const rows = getFocusableRows();
+      if (!rows.length) break;
+      const newIdx = focusedRowIdx <= 0 ? rows.length - 1 : focusedRowIdx - 1;
+      highlightRow(newIdx);
+      break;
+    }
+    case 'ArrowDown': {
+      e.preventDefault();
+      const rows = getFocusableRows();
+      if (!rows.length) break;
+      const newIdx = focusedRowIdx >= rows.length - 1 ? 0 : focusedRowIdx + 1;
+      highlightRow(newIdx);
+      break;
+    }
+
+    // Enter : toggle checkbox of focused row
+    case 'Enter': {
+      e.preventDefault();
+      const rows = getFocusableRows();
+      if (focusedRowIdx >= 0 && focusedRowIdx < rows.length) {
+        const cb = rows[focusedRowIdx].querySelector('input[type="checkbox"]');
+        if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+      }
+      break;
+    }
+
+    // Delete/Backspace : delete focused row
+    case 'Delete':
+    case 'Backspace': {
+      const rows = getFocusableRows();
+      if (focusedRowIdx >= 0 && focusedRowIdx < rows.length) {
+        e.preventDefault();
+        const id = parseInt(rows[focusedRowIdx].getAttribute('data-id'));
+        deleteRow(id);
+        const newLen = getFocusableRows().length;
+        highlightRow(Math.min(focusedRowIdx, newLen - 1));
+      }
+      break;
+    }
+
+    // Escape : clear row focus
+    case 'Escape':
+      focusedRowIdx = -1;
+      getFocusableRows().forEach(r => r.classList.remove('kb-focus'));
+      break;
+
+    // Ctrl shortcuts
+    default:
+      if (!ctrl) break;
+      switch(e.key.toLowerCase()) {
+        case 'u': e.preventDefault(); document.getElementById('fileInput').click(); break;
+        case 'd': e.preventDefault(); allData.length ? downloadExcel() : (session.length ? downloadAllFE() : toast('Pehle file upload karo','err')); break;
+        case 's': e.preventDefault(); allData.length ? saveFEToSession() : toast('Pehle file upload karo','err'); break;
+        case 'n': e.preventDefault(); addNewFE(); break;
+        case 'c': if(e.shiftKey){ e.preventDefault(); allData.length ? copyTable() : toast('Pehle file upload karo','err'); } break;
+        case '1': e.preventDefault(); allData.length && setStatusFilter('all'); break;
+        case '2': e.preventDefault(); allData.length && setStatusFilter('pending'); break;
+        case '3': e.preventDefault(); allData.length && setStatusFilter('dispatched'); break;
+        case '4': e.preventDefault(); allData.length && setStatusFilter('rto'); break;
+        case '5': e.preventDefault(); allData.length && setStatusFilter('dto'); break;
+      }
+  }
+});
+
+// Reset focus when table re-renders
+const _origRefreshAll = refreshAll;
+
+
 </script>
 </body>
 </html>
