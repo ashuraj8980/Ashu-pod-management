@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POD Management Tool — Palam Vihar RPC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0B1E33;--navy2:#16304F;--navy3:#1E3F6A;
+  --blue:#1565C0;--blue2:#1976D2;--blue-lt:#E3F2FD;--blue-lt2:#BBDEFB;
+  --green:#1B6B3A;--green2:#2E7D52;--green-lt:#E8F5E9;
+  --red:#B71C1C;--red2:#C62828;--red-lt:#FFEBEE;
+  --amber:#E65100;--amber2:#F57C00;--amber-lt:#FFF3E0;
+  --purple:#4527A0;--purple-lt:#EDE7F6;
+  --slate:#F0F4F8;--slate2:#E2E8F0;--border:#CBD5E1;
+  --text:#0B1E33;--text2:#3D5166;--text3:#7A92A8;
+  --white:#fff;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.06);
+  --shadow-sm:0 2px 6px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+  --r:8px;--r-lg:12px;--r-xl:16px;
+}
+body{font-family:'Inter',sans-serif;background:var(--slate);color:var(--text);min-height:100vh;font-size:13px;-webkit-font-smoothing:antialiased}
+
+/* ══ HEADER ══════════════════════════════════════════════ */
+.header{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,var(--navy3) 100%);
+  padding:0 24px;height:60px;
+  display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 16px rgba(0,0,0,.35);
+}
+.h-icon{width:38px;height:38px;background:linear-gradient(135deg,#E8A020,#F5C050);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(232,160,32,.4)}
+.h-text .h-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.h-text .h-sub{font-size:10px;color:#6E8FAA;letter-spacing:.6px;font-weight:500;text-transform:uppercase;margin-top:1px}
+.h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.h-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:600;color:#fff}
+.h-step-pill{background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.35);border-radius:20px;padding:3px 12px;font-size:10px;font-weight:700;color:#F5C050;letter-spacing:.5px;text-transform:uppercase}
+
+/* ══ STEP INDICATOR ═══════════════════════════════════════ */
+.steps{display:flex;align-items:center;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto}
+.step{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.3px;white-space:nowrap;border-bottom:2.5px solid transparent;cursor:default;transition:all .2s;text-transform:uppercase}
+.step.done{color:var(--green2)}
+.step.active{color:var(--blue2);border-bottom-color:var(--blue2)}
+.step .sn{width:20px;height:20px;border-radius:50%;background:var(--slate2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;transition:all .2s}
+.step.done .sn{background:var(--green2);color:#fff}
+.step.active .sn{background:var(--blue2);color:#fff}
+.step-arrow{color:var(--border);font-size:12px;flex-shrink:0}
+
+/* ══ PAGE ══════════════════════════════════════════════════ */
+.page{max-width:1320px;margin:0 auto;padding:20px 20px 60px}
+
+/* ══ CARDS ═════════════════════════════════════════════════ */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-sm);margin-bottom:16px}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--slate2);display:flex;align-items:center;gap:10px}
+.card-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--blue2)}
+.card-title{font-size:13.5px;font-weight:700;color:var(--navy)}
+.card-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+.card-body{padding:18px 20px}
+
+/* ══ SETUP CARD ════════════════════════════════════════════ */
+.setup-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:10.5px;font-weight:700;color:var(--text2);letter-spacing:.4px;text-transform:uppercase}
+.field-input{
+  padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r);
+  font-size:13px;font-family:'Inter',sans-serif;background:var(--slate);color:var(--text);
+  transition:all .15s;
+}
+.field-input:focus{outline:none;border-color:var(--blue2);background:var(--white);box-shadow:0 0 0 3px rgba(25,118,210,.1)}
+.field-input::placeholder{color:var(--text3)}
+
+/* ══ UPLOAD ════════════════════════════════════════════════ */
+.upload-zone{
+  border:2px dashed #B8C8D8;border-radius:var(--r-lg);
+  background:var(--slate);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue2);background:var(--blue-lt)}
+.uz-icon{font-size:36px;margin-bottom:8px}
+.uz-title{font-size:14px;font-weight:700;color:var(--navy2)}
+.uz-sub{font-size:12px;color:var(--text3);margin-top:5px}
+.fmt-row{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.fmt{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:10.5px;font-weight:600;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+#fileInput{display:none}
+
+/* ══ STATUS TAB BAR ════════════════════════════════════════ */
+.status-tabs{display:flex;gap:0;background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.stab{
+  flex:1;padding:14px 10px;text-align:center;cursor:pointer;
+  border-right:1px solid var(--border);transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  position:relative;border-bottom:3px solid transparent;
+}
+.stab:last-child{border-right:none}
+.stab:hover{background:var(--slate)}
+.stab.active{background:var(--blue-lt);border-bottom-color:var(--blue2)}
+.stab.active.pend{background:var(--amber-lt);border-bottom-color:var(--amber2)}
+.stab.active.rto{background:var(--red-lt);border-bottom-color:var(--red2)}
+.stab.active.dto{background:var(--green-lt);border-bottom-color:var(--green2)}
+.stab-icon{font-size:22px}
+.stab-num{font-size:22px;font-weight:800;line-height:1;letter-spacing:-1px}
+.stab-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+.stab-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0}
+.stab.all  .stab-num{color:var(--navy)}
+.stab.pend .stab-num{color:var(--amber)}
+.stab.rto  .stab-num{color:var(--red2)}
+.stab.dto  .stab-num{color:var(--green2)}
+
+/* ══ REMARK CHIPS ══════════════════════════════════════════ */
+.chip-section{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.chips-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{
+  display:inline-flex;align-items:center;gap:9px;
+  border-radius:var(--r);padding:8px 14px;
+  font-size:12.5px;font-weight:500;
+  border:1.5px solid var(--border);background:var(--slate);
+  cursor:pointer;transition:all .15s;user-select:none;
+}
+.chip:hover{border-color:var(--blue2);background:var(--blue-lt);color:var(--blue)}
+.chip.active{border-color:var(--blue2);background:var(--blue2);color:#fff}
+.chip.rej{border-color:#FFCDD2;background:var(--red-lt);color:var(--red2)}
+.chip.rej:hover,.chip.rej.active{background:var(--red2);color:#fff;border-color:var(--red2)}
+.chip-label{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-count{background:rgba(0,0,0,.09);border-radius:12px;padding:1px 9px;font-size:11px;font-weight:700;white-space:nowrap}
+.chip.active .chip-count,.chip.rej.active .chip-count,.chip.rej:hover .chip-count{background:rgba(255,255,255,.22)}
+.chip-all-btn{background:none;border:1.5px solid var(--border);border-radius:var(--r);padding:7px 14px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.chip-all-btn:hover{border-color:var(--navy2);color:var(--navy2)}
+
+/* ══ ACTION BAR ════════════════════════════════════════════ */
+.action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 17px;border-radius:var(--r);border:1.5px solid transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;letter-spacing:.1px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--blue2);color:#fff}.btn-primary:hover{background:var(--blue)}
+.btn-green{background:var(--green2);color:#fff}.btn-green:hover{background:var(--green)}
+.btn-red{background:var(--red2);color:#fff}.btn-red:hover{background:var(--red)}
+.btn-amber{background:var(--amber2);color:#fff}.btn-amber:hover{background:var(--amber)}
+.btn-ghost{background:var(--white);border-color:var(--border);color:var(--text2)}.btn-ghost:hover{border-color:var(--navy2);color:var(--navy2);background:var(--slate)}
+.btn-danger{background:var(--red-lt);border-color:#FFCDD2;color:var(--red2)}.btn-danger:hover{background:var(--red2);color:#fff;border-color:var(--red2)}
+.btn-sm{padding:6px 12px;font-size:11px}
+.spacer{flex:1}
+
+/* ══ TABLE ════════════════════════════════════════════════ */
+.tbl-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm)}
+.tbl-toolbar{display:flex;align-items:center;gap:10px;padding:12px 18px;background:#FAFBFD;border-bottom:1px solid var(--slate2);flex-wrap:wrap}
+.tbl-label{font-size:11px;font-weight:700;color:var(--navy2);text-transform:uppercase;letter-spacing:.5px}
+.tbl-count{background:var(--slate);border:1px solid var(--border);border-radius:12px;padding:2px 12px;font-size:11.5px;font-weight:700;color:var(--text2)}
+.sel-lbl{font-size:11.5px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500}
+
+.tbl-wrap{overflow:auto;max-height:520px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--navy2);color:rgba(255,255,255,.88);padding:9px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;z-index:2;white-space:nowrap}
+thead th.tc{text-align:center}
+tbody tr{transition:background .08s}
+tbody tr:hover td{background:#F5F8FE}
+tbody tr.sel-row td{background:#DDEEFF!important}
+tbody tr.rej-row td{background:var(--red-lt)}
+tbody tr.rej-row:hover td{background:#FFD9D9}
+tbody tr.rej-row.sel-row td{background:#FFBBBB!important}
+
+/* DSP GROUP ROW */
+tbody tr.dsp-hdr td{
+  background:linear-gradient(90deg,var(--navy) 0%,var(--navy3) 100%);
+  color:#fff;padding:8px 13px;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+}
+.dsp-grp-inner{display:flex;align-items:center;gap:10px}
+.dsp-grp-name{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#E8D5A0}
+.dsp-grp-count{background:rgba(232,160,32,.85);color:var(--navy);border-radius:10px;padding:1px 10px;font-size:10px;font-weight:800}
+.dsp-grp-fe{font-size:10.5px;color:#8AACCC;margin-left:auto;font-weight:500}
+
+tbody td{padding:8px 13px;border-bottom:1px solid #EEF2F8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;max-width:180px}
+td.tc{text-align:center}
+.awb-cell{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--navy2);font-weight:500}
+.client-cell{font-size:12px;color:var(--text2)}
+.remark-cell{font-size:11.5px;color:var(--text2)}
+.remark-pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;background:var(--amber-lt);color:var(--amber);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.remark-pill.rej{background:var(--red-lt);color:var(--red2)}
+
+.del-btn{width:26px;height:26px;border:none;background:none;color:#BBC8D4;cursor:pointer;border-radius:6px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+.del-btn:hover{background:var(--red-lt);color:var(--red2)}
+
+/* ══ EMPTY ═════════════════════════════════════════════════ */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:12.5px}
+
+/* ══ TOAST ════════════════════════════════════════════════ */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:600;display:none;z-index:9999;box-shadow:var(--shadow-lg);white-space:nowrap;pointer-events:none}
+#toast.ok{background:#0A2010;color:#6EE7A6;border:1px solid rgba(110,231,166,.25)}
+#toast.err{background:#200808;color:#FCA5A5;border:1px solid rgba(252,165,165,.25)}
+#toast.info{background:var(--navy);color:#93C5FD;border:1px solid rgba(147,197,253,.25)}
+
+/* ══ RESPONSIVE ════════════════════════════════════════════ */
+@media(max-width:700px){
+  .setup-grid{grid-template-columns:1fr 1fr}
+  .page{padding:14px 12px 40px}
+  .steps{padding:0 12px}
+  .header{padding:0 14px}
+  .h-step-pill{display:none}
+}
+@media(max-width:480px){
+  .setup-grid{grid-template-columns:1fr}
+  .status-tabs{flex-wrap:wrap}
+  .stab{min-width:50%}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="h-icon">🚚</div>
+  <div class="h-text">
+    <div class="h-title">POD Management Tool</div>
+    <div class="h-sub">Palam Vihar RPC &nbsp;·&nbsp; Delivery Operations</div>
+  </div>
+  <div class="h-right">
+    <span class="h-step-pill" id="stepPill">Step 1 of 3</span>
+    <span class="h-badge" id="rowBadge" style="display:none">0 rows</span>
+  </div>
+</div>
+
+<!-- STEP INDICATOR -->
+<div class="steps">
+  <div class="step active" id="step1"><span class="sn">1</span> Setup & Upload</div>
+  <span class="step-arrow">›</span>
+  <div class="step" id="step2"><span class="sn">2</span> Filter & Review</div>
+  <span class="step-arrow">›</span>
+  <div class="step" id="step3"><span class="sn">3</span> Export</div>
+</div>
+
+<div class="page">
+
+<!-- ══ STEP 1: SETUP ══════════════════════════════════════ -->
+<div class="card" id="setupCard">
+  <div class="card-header">
+    <div>
+      <div class="card-eyebrow">Step 1</div>
+      <div class="card-title">Setup Details &amp; Upload File</div>
+      <div class="card-sub">Enter FE name and DSP ID, then upload the Excel file</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="setup-grid">
+      <div class="field-group">
+        <label class="field-label">👤 FE Name</label>
+        <input class="field-input" type="text" id="feName" placeholder="Field Executive name">
+      </div>
+      <div class="field-group">
+        <label class="field-label">🏷️ DSP ID</label>
+        <input class="field-input" type="text" id="dspId" placeholder="e.g. DLEC0001">
+      </div>
+      <div class="field-group">
+        <label class="field-label">📅 Date</label>
+        <input class="field-input" type="date" id="dateVal">
+      </div>
+    </div>
+    <div class="upload-zone" id="uploadZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleDrop(event)">
+      <div class="uz-icon">📂</div>
+      <div class="uz-title">Click to upload or drag &amp; drop</div>
+      <div class="uz-sub">First sheet auto-loads — all formats supported</div>
+      <div class="fmt-row">
+        <span class="fmt">.xlsx</span><span class="fmt">.xls</span><span class="fmt">.csv</span><span class="fmt">.tsv</span><span class="fmt">.ods</span>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.tsv,.ods,.xlsm" onchange="loadFile(this.files[0])">
+  </div>
+</div>
+
+<!-- ══ STEP 2: STATUS TABS ════════════════════════════════ -->
+<div id="mainSection" style="display:none">
+
+  <!-- Status Tab Bar -->
+  <div class="status-tabs">
+    <div class="stab all active" id="tabAll" onclick="setStatusFilter('all')">
+      <span class="stab-icon">📦</span>
+      <span class="stab-num" id="cntAll">0</span>
+      <span class="stab-lbl">All</span>
+    </div>
+    <div class="stab pend" id="tabPend" onclick="setStatusFilter('pending')">
+      <span class="stab-icon">⏳</span>
+      <span class="stab-num" id="cntPend">0</span>
+      <span class="stab-lbl">Pending</span>
+    </div>
+    <div class="stab" id="tabDisp" onclick="setStatusFilter('dispatched')" style="--tab-clr:var(--blue2)">
+      <span class="stab-icon">🚴</span>
+      <span class="stab-num" id="cntDisp" style="color:var(--blue2)">0</span>
+      <span class="stab-lbl">Dispatch</span>
+    </div>
+    <div class="stab rto" id="tabRTO" onclick="setStatusFilter('rto')">
+      <span class="stab-icon">↩️</span>
+      <span class="stab-num" id="cntRTO">0</span>
+      <span class="stab-lbl">RTO</span>
+    </div>
+    <div class="stab dto" id="tabDTO" onclick="setStatusFilter('dto')">
+      <span class="stab-icon">✅</span>
+      <span class="stab-num" id="cntDTO">0</span>
+      <span class="stab-lbl">DTO</span>
+    </div>
+  </div>
+
+  <!-- Remark Filter (shown only for pending) -->
+  <div class="chip-section" id="remarkSection" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="card-eyebrow">Remark Filter</div>
+        <div class="card-title" style="margin-top:2px">Pending — Remark-wise Breakdown</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <span id="remarkFilterLabel" style="font-size:11.5px;color:var(--text3)">Click a remark to filter</span>
+        <button class="chip-all-btn" id="showAllChipBtn" onclick="clearRemarkFilter()" style="display:none">← Show All Pending</button>
+      </div>
+    </div>
+    <div class="chips-grid" id="chipsGrid"></div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-bar" id="actionBar">
+    <div id="abLeft" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+    <div class="spacer"></div>
+    <div id="abRight" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="tbl-card" id="tblCard">
+    <div class="tbl-toolbar">
+      <span class="tbl-label" id="tblLabel">Shipments</span>
+      <span class="tbl-count" id="tblCount">0</span>
+      <span class="spacer"></span>
+      <label class="sel-lbl"><input type="checkbox" id="selAll" onchange="toggleSelAll(this)"> Select All</label>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <colgroup>
+          <col style="width:34px"><col style="width:32px">
+          <col style="width:120px"><col style="width:110px"><col style="width:155px">
+          <col style="width:130px"><col style="width:130px"><col style="width:auto"><col style="width:120px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="tc">☑</th><th></th>
+            <th>Date</th><th>DSP ID</th><th>AWB Number</th>
+            <th>Client</th><th>Order ID</th><th>Remark</th><th>FE Name</th>
+          </tr>
+        </thead>
+        <tbody id="mainBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">No shipments found</div>
+    <div class="empty-sub">Try a different filter or upload a new file</div>
+  </div>
+
+  <!-- Reset -->
+  <div style="text-align:center;margin-top:24px">
+    <button class="btn btn-ghost btn-sm" onclick="clearAll()">✕ Clear &amp; Upload New File</button>
+  </div>
+
+</div><!-- /mainSection -->
+
+</div><!-- /page -->
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+let allData = [];
+let statusFilter = 'all';   // 'all' | 'pending' | 'dispatched' | 'rto' | 'dto'
+let activeRemark = null;    // null = all pending, string = specific remark
+
+const REJ_KW = ['reject but intact','reject but','intact'];
+
+document.getElementById('dateVal').valueAsDate = new Date();
+
+/* ── UTILS ─────────────────────────────────────────────── */
+function toast(msg, type='info', d=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=type; t.style.display='block';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',d);
+}
+function isRej(r){ return REJ_KW.some(k=>(r||'').toLowerCase().includes(k)); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── FILE LOAD ──────────────────────────────────────────── */
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+}
+function loadFile(file){
+  if(!file) return;
+  const name=file.name.toLowerCase(), rd=new FileReader();
+  if(name.endsWith('.csv')||name.endsWith('.tsv')){
+    rd.onload=e=>{ const sep=name.endsWith('.tsv')?'\t':detectSep(e.target.result); parseDelim(e.target.result,sep); };
+    rd.readAsText(file);
+  } else {
+    rd.onload=e=>parseXL(e.target.result);
+    rd.readAsArrayBuffer(file);
+  }
+}
+function detectSep(txt){
+  const f=txt.split('\n')[0];
+  const t=(f.match(/\t/g)||[]).length,c=(f.match(/,/g)||[]).length,s=(f.match(/;/g)||[]).length;
+  return t>=c&&t>=s?'\t':s>c?';':',';
+}
+function parseXL(buf){
+  try{
+    const wb=XLSX.read(buf,{type:'array',cellText:true,cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    processRows(XLSX.utils.sheet_to_json(ws,{defval:'',raw:false}));
+  }catch(e){ toast('File error: '+e.message,'err'); }
+}
+function parseDelim(txt,sep){
+  const lines=txt.trim().split(/\r?\n/); if(lines.length<2) return;
+  const hdr=splitL(lines[0],sep), rows=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=splitL(lines[i],sep); if(cols.length<2) continue;
+    const o={}; hdr.forEach((h,j)=>{o[h.trim()]=(cols[j]||'').trim();}); rows.push(o);
+  }
+  processRows(rows);
+}
+function splitL(line,sep){
+  if(sep===','){
+    const r=[];let cur='',inQ=false;
+    for(const c of line){if(c==='"')inQ=!inQ;else if(c===sep&&!inQ){r.push(cur.replace(/"/g,''));cur='';}else cur+=c;}
+    r.push(cur.replace(/"/g,'')); return r;
+  }
+  return line.split(sep).map(c=>c.replace(/"/g,'').trim());
+}
+function findKey(obj,names){
+  const ks=Object.keys(obj);
+  for(const n of names){const f=ks.find(k=>k.toLowerCase().trim()===n.toLowerCase());if(f)return f;}
+  for(const n of names){const f=ks.find(k=>k.toLowerCase().includes(n.toLowerCase()));if(f)return f;}
+  return null;
+}
+
+function processRows(rows){
+  if(!rows.length){ toast('No data in file','err'); return; }
+  const s=rows[0];
+  const kW=findKey(s,['waybill','awb','awb number','awb_number','waybillno']);
+  const kC=findKey(s,['client','client name','clientname']);
+  const kO=findKey(s,['order','order id','orderid','order_id','order no']);
+  const kS=findKey(s,['currentstatus','current status','current_status','status']);
+  const kR=findKey(s,['remark','remarks','remark1']);
+  if(!kW){ toast('AWB column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err'); return; }
+  if(!kS){ toast('Status column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err'); return; }
+
+  allData = rows.map((r,i)=>({
+    id: i,
+    waybill: String(r[kW]||'').trim(),
+    client:  String(r[kC]||'').trim(),
+    order:   String(r[kO]||'').trim(),
+    status:  String(r[kS]||'').trim().toLowerCase(),
+    remark:  String(r[kR]||'').trim(),
+    isRej:   isRej(String(r[kR]||'')),
+    sel:     false,
+  })).filter(r=>r.waybill);
+
+  if(!allData.length){ toast('No valid rows found','err'); return; }
+
+  statusFilter='all'; activeRemark=null;
+  document.getElementById('mainSection').style.display='block';
+  document.getElementById('rowBadge').textContent=allData.length+' rows';
+  document.getElementById('rowBadge').style.display='block';
+  setSteps(2);
+  refreshAll();
+  toast('✓ '+allData.length+' rows loaded','ok');
+}
+
+/* ── STATUS FILTER ──────────────────────────────────────── */
+function setStatusFilter(s){
+  statusFilter=s; activeRemark=null;
+  // tab UI
+  ['all','pend','disp','rto','dto'].forEach(k=>{
+    const el=document.getElementById('tab'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.classList.remove('active');
+  });
+  const tabMap={all:'tabAll',pending:'tabPend',dispatched:'tabDisp',rto:'tabRTO',dto:'tabDTO'};
+  const tabEl=document.getElementById(tabMap[s]);
+  if(tabEl) tabEl.classList.add('active');
+  refreshAll();
+}
+
+/* ── REMARK CHIPS ───────────────────────────────────────── */
+function renderChips(){
+  const pendRows=allData.filter(r=>r.status==='pending');
+  const rs=document.getElementById('remarkSection');
+  if(statusFilter!=='pending' || !pendRows.length){ rs.style.display='none'; return; }
+
+  const counts={};
+  pendRows.forEach(r=>{const k=r.remark||'No Remark'; counts[k]=(counts[k]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+
+  document.getElementById('chipsGrid').innerHTML=sorted.map(([lbl,cnt])=>{
+    const rej=isRej(lbl), act=activeRemark===lbl;
+    return `<div class="chip ${rej?'rej':''} ${act?'active':''}"
+      onclick="clickChip('${esc(lbl).replace(/'/g,"&#39;")}')">
+      <span class="chip-label" title="${esc(lbl)}">${esc(lbl)||'No Remark'}</span>
+      <span class="chip-count">${cnt} pkt</span>
+    </div>`;
+  }).join('');
+
+  rs.style.display='block';
+  document.getElementById('remarkFilterLabel').textContent=
+    activeRemark ? 'Filtered: "'+activeRemark+'"' : 'Click a remark to filter';
+  document.getElementById('showAllChipBtn').style.display=activeRemark?'inline-flex':'none';
+}
+function clickChip(r){ activeRemark=activeRemark===r?null:r; refreshAll(); }
+function clearRemarkFilter(){ activeRemark=null; refreshAll(); }
+
+/* ── VISIBLE ROWS ───────────────────────────────────────── */
+function visibleRows(){
+  let rows=allData;
+  if(statusFilter!=='all') rows=rows.filter(r=>r.status===statusFilter);
+  if(statusFilter==='pending'&&activeRemark!==null) rows=rows.filter(r=>r.remark===activeRemark);
+  return rows;
+}
+
+/* ── DSP KEY FROM AWB ───────────────────────────────────── */
+function dspFromAwb(awb){
+  const m=awb.match(/^([A-Za-z]+)/); return m?m[1].toUpperCase():awb.substring(0,4).toUpperCase();
+}
+
+/* ── RENDER TABLE ───────────────────────────────────────── */
+function renderTable(){
+  const data=visibleRows();
+  const fe=document.getElementById('feName').value||'—';
+  const dspInput=document.getElementById('dspId').value.trim();
+  const date=document.getElementById('dateVal').value||'—';
+
+  // Label
+  const labels={all:'All Shipments',pending:'Pending Shipments',dispatched:'Dispatched Shipments',rto:'RTO Shipments',dto:'DTO / Delivered'};
+  document.getElementById('tblLabel').textContent=activeRemark?'Pending — '+activeRemark:(labels[statusFilter]||'Shipments');
+  document.getElementById('tblCount').textContent=data.length+' rows';
+
+  if(!data.length){
+    document.getElementById('tblCard').style.display='none';
+    document.getElementById('emptyState').style.display='block';
+    return;
+  }
+  document.getElementById('tblCard').style.display='block';
+  document.getElementById('emptyState').style.display='none';
+
+  // NO grouping — flat list. DSP only on very first data row, rest blank.
+  let html='';
+  // Single DSP header banner if DSP ID is entered
+  if(dspInput){
+    html+=`<tr class="dsp-hdr">
+      <td colspan="9">
+        <div class="dsp-grp-inner">
+          <span style="font-size:9.5px;color:#6A8CAA;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-right:2px">DSP</span>
+          <span class="dsp-grp-name">${esc(dspInput)}</span>
+          <span class="dsp-grp-count">${data.length} pkt</span>
+          <span class="dsp-grp-fe">${esc(fe)}</span>
+        </div>
+      </td>
+    </tr>`;
+  }
+  data.forEach((r,idx)=>{
+    const rejClass=r.isRej?'rej-row':'';
+    const selClass=r.sel?'sel-row':'';
+    // DSP ID only on FIRST row overall, rest all blank
+    const dspCell=idx===0 ? esc(dspInput||'') : '';
+    const remarkHtml=r.remark
+      ?`<span class="remark-pill ${r.isRej?'rej':''}">${esc(r.remark)}</span>`
+      :`<span style="color:var(--text3);font-size:11px">—</span>`;
+    html+=`<tr class="${rejClass} ${selClass}" data-id="${r.id}">
+      <td class="tc"><input type="checkbox" ${r.sel?'checked':''} onchange="toggleRow(${r.id},this)"></td>
+      <td class="tc"><button class="del-btn" onclick="deleteRow(${r.id})" title="Delete row">✕</button></td>
+      <td style="color:var(--text2)">${esc(date)}</td>
+      <td style="color:var(--text3);font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:600">${dspCell}</td>
+      <td><span class="awb-cell">${esc(r.waybill)}</span></td>
+      <td class="client-cell">${esc(r.client)}</td>
+      <td style="font-size:11.5px;color:var(--text2)">${esc(r.order)}</td>
+      <td>${remarkHtml}</td>
+      <td style="font-size:11.5px;color:var(--text2)">${esc(fe)}</td>
+    </tr>`;
+  });
+
+  document.getElementById('mainBody').innerHTML=html;
+  document.getElementById('selAll').checked=data.length>0&&data.every(r=>r.sel);
+}
+
+/* ── ACTION BAR ─────────────────────────────────────────── */
+function renderActionBar(){
+  const data=visibleRows();
+  const selN=allData.filter(r=>r.sel).length;
+  const isPending=statusFilter==='pending';
+
+  let left='', right='';
+
+  if(isPending){
+    left+=`<button class="btn btn-green" onclick="downloadExcel()">⬇ Download Excel</button>`;
+    left+=`<button class="btn btn-primary" onclick="copyTable()">📋 Copy Table</button>`;
+  } else {
+    left+=`<button class="btn btn-green" onclick="downloadExcel()">⬇ Download Excel</button>`;
+    left+=`<button class="btn btn-primary" onclick="copyTable()">📋 Copy Table</button>`;
+  }
+
+  if(selN>0){
+    left+=`<button class="btn btn-danger" onclick="deleteSelected()">🗑 Delete Selected (${selN})</button>`;
+  }
+
+  document.getElementById('abLeft').innerHTML=left;
+  document.getElementById('abRight').innerHTML=right;
+}
+
+/* ── REFRESH ALL ─────────────────────────────────────────── */
+function refreshAll(){
+  updateCounts();
+  renderChips();
+  renderTable();
+  renderActionBar();
+  updateSelUI();
+}
+
+/* ── COUNTS ─────────────────────────────────────────────── */
+function updateCounts(){
+  const total=allData.length;
+  const pend=allData.filter(r=>r.status==='pending').length;
+  const disp=allData.filter(r=>r.status==='dispatched'||r.status==='dispatch').length;
+  const rto=allData.filter(r=>r.status==='rto').length;
+  const dto=allData.filter(r=>r.status==='dto'||r.status==='delivered').length;
+  document.getElementById('cntAll').textContent=total;
+  document.getElementById('cntPend').textContent=pend;
+  document.getElementById('cntDisp').textContent=disp;
+  document.getElementById('cntRTO').textContent=rto;
+  document.getElementById('cntDTO').textContent=dto;
+  document.getElementById('rowBadge').textContent=total+' rows';
+}
+
+/* ── SELECTION ───────────────────────────────────────────── */
+function toggleRow(id,cb){
+  const r=allData.find(x=>x.id===id); if(r) r.sel=cb.checked;
+  const tr=document.querySelector('tr[data-id="'+id+'"]');
+  if(tr) tr.classList.toggle('sel-row',cb.checked);
+  updateSelUI();
+  renderActionBar();
+}
+function toggleSelAll(cb){
+  visibleRows().forEach(r=>r.sel=cb.checked);
+  renderTable(); updateSelUI(); renderActionBar();
+}
+function updateSelUI(){
+  document.getElementById('selAll').checked=visibleRows().length>0&&visibleRows().every(r=>r.sel);
+}
+
+/* ── DELETE ──────────────────────────────────────────────── */
+function deleteRow(id){
+  allData=allData.filter(r=>r.id!==id);
+  refreshAll();
+  toast('Row deleted','info');
+}
+function deleteSelected(){
+  const n=allData.filter(r=>r.sel).length;
+  if(!n) return;
+  allData=allData.filter(r=>!r.sel);
+  refreshAll();
+  toast(n+' rows deleted','info');
+}
+
+/* ── BUILD EXPORT ROWS (no serial, DSP only on first row per group) ── */
+function buildExportRows(data){
+  const fe=document.getElementById('feName').value||'';
+  const dspInput=document.getElementById('dspId').value.trim();
+  const date=document.getElementById('dateVal').value||'';
+
+  // Flat list — DSP entered by user shows only on first data row, rest blank
+  const header=['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name'];
+  const out=[header];
+  data.forEach((r,idx)=>{
+    out.push([date, idx===0?(dspInput||''):'', r.waybill, r.client, r.order, r.remark, fe]);
+  });
+  return out;
+}
+
+/* ── DOWNLOAD EXCEL ─────────────────────────────────────── */
+function downloadExcel(){
+  const data=visibleRows();
+  if(!data.length){ toast('No data to download','err'); return; }
+  const dspInput=document.getElementById('dspId').value||'DSP';
+  const date=document.getElementById('dateVal').value||'today';
+
+  const wb=XLSX.utils.book_new();
+  const rows=buildExportRows(data);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+
+  // Col widths
+  ws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
+
+  // Center-align all + style header
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let R=range.s.r;R<=range.e.r;R++){
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const addr=XLSX.utils.encode_cell({r:R,c:C});
+      if(!ws[addr]) ws[addr]={t:'z',v:''};
+      if(!ws[addr].s) ws[addr].s={};
+      ws[addr].s.alignment={horizontal:'center',vertical:'center',wrapText:true};
+      if(R===0){
+        ws[addr].s.fill={patternType:'solid',fgColor:{rgb:'16304F'}};
+        ws[addr].s.font={bold:true,color:{rgb:'FFFFFF'},sz:11};
+      }
+    }
+  }
+
+  const suf=activeRemark?'_'+activeRemark.replace(/[^a-zA-Z0-9]/g,'_')
+           :statusFilter!=='all'?'_'+statusFilter.toUpperCase()
+           :'_AllData';
+  XLSX.utils.book_append_sheet(wb,ws,'POD Data');
+  XLSX.writeFile(wb,'POD_'+dspInput+'_'+date+suf+'.xlsx');
+  toast('✓ Downloaded — '+data.length+' rows','ok');
+  setSteps(3);
+}
+
+/* ── COPY TABLE ─────────────────────────────────────────── */
+function copyTable(){
+  const data=visibleRows();
+  if(!data.length){ toast('No data to copy','err'); return; }
+  const fe=document.getElementById('feName').value||'';
+  const dspInput=document.getElementById('dspId').value.trim();
+  const date=document.getElementById('dateVal').value||'';
+
+  // Pure data only — no header, no DSP group row, DSP only on first row
+  let txt='';
+  data.forEach((r,idx)=>{
+    txt+=`${date}\t${idx===0?(dspInput||''):''}\t${r.waybill}\t${r.client}\t${r.order}\t${r.remark}\t${fe}\n`;
+  });
+
+  function doFallback(){
+    const ta=document.createElement('textarea');
+    ta.value=txt;
+    ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select(); ta.setSelectionRange(0,999999);
+    try{
+      const ok=document.execCommand('copy');
+      toast(ok?'✓ Copied! Paste with Ctrl+V':'Copy failed — use Download','ok');
+    }catch(e){ toast('Copy not supported — use Download Excel','err'); }
+    document.body.removeChild(ta);
+  }
+
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt)
+      .then(()=>toast('✓ Copied! Paste with Ctrl+V','ok'))
+      .catch(()=>doFallback());
+  } else { doFallback(); }
+}
+
+/* ── STEPS ───────────────────────────────────────────────── */
+function setSteps(active){
+  for(let i=1;i<=3;i++){
+    const el=document.getElementById('step'+i);
+    el.classList.remove('active','done');
+    if(i<active) el.classList.add('done');
+    else if(i===active) el.classList.add('active');
+  }
+  document.getElementById('stepPill').textContent='Step '+active+' of 3';
+}
+
+/* ── CLEAR ALL ───────────────────────────────────────────── */
+function clearAll(){
+  allData=[]; statusFilter='all'; activeRemark=null;
+  document.getElementById('mainSection').style.display='none';
+  document.getElementById('rowBadge').style.display='none';
+  document.getElementById('fileInput').value='';
+  ['cntAll','cntPend','cntDisp','cntRTO','cntDTO'].forEach(id=>document.getElementById(id).textContent='0');
+  setSteps(1);
+  toast('Cleared — ready for new upload','info');
+}
+</script>
+</body>
+</html>
