@@ -265,12 +265,12 @@ td.tc{text-align:center}
   <div class="card-body">
     <div class="setup-row">
       <div class="setup-field">
-        <label class="f-label" for="feName">Field Executive (FE) Name</label>
-        <input class="f-input" type="text" id="feName" placeholder="Enter FE name" autocomplete="off" oninput="autoSaveDebounce()">
-      </div>
-      <div class="setup-field">
         <label class="f-label" for="dspId">DSP ID</label>
         <input class="f-input" type="text" id="dspId" placeholder="e.g. DLEC0001" autocomplete="off" oninput="autoSaveDebounce()">
+      </div>
+      <div class="setup-field">
+        <label class="f-label" for="feName">Field Executive (FE) Name</label>
+        <input class="f-input" type="text" id="feName" placeholder="Enter FE name" autocomplete="off" oninput="autoSaveDebounce()">
       </div>
       <div class="setup-field" style="max-width:180px">
         <label class="f-label" for="dateVal">Date</label>
@@ -438,6 +438,14 @@ const LS_KEY = 'pod_tool_sessions_v1';
    INIT
 ══════════════════════════════════════ */
 document.getElementById('dateVal').valueAsDate = new Date();
+
+function fmtDate(d){
+  // Convert YYYY-MM-DD to DD-MM-YYYY
+  if(!d) return '';
+  const p=d.split('-');
+  if(p.length===3) return p[2]+'-'+p[1]+'-'+p[0];
+  return d;
+}
 
 function triggerFileInput(){
   const fi = document.getElementById('fileInput');
@@ -1003,7 +1011,7 @@ function copyIntact(){
 ══════════════════════════════════════ */
 function buildRows(data, includeHeader=true){
   const s=sessions[activeKey]||{};
-  const fe=s.fe||''; const dsp=s.dsp||''; const date=s.date||'';
+  const fe=s.fe||''; const dsp=s.dsp||''; const date=fmtDate(s.date||'');
   const out=[];
   if(includeHeader) out.push(['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']);
   // DSP only on first data row
@@ -1044,7 +1052,7 @@ function downloadExcel(){
 function copyTable(){
   const data=visibleRows(); if(!data.length){toast('No data','err');return;}
   const s=sessions[activeKey]||{};
-  const dsp=s.dsp||''; const fe=s.fe||''; const date=s.date||'';
+  const dsp=s.dsp||''; const fe=s.fe||''; const date=fmtDate(s.date||'');
 
   let orderedData=data;
   if(statusFilter==='pending'&&activeRemark===null){
