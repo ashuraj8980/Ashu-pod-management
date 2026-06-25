@@ -3,280 +3,295 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Delhivery POD Tool — Palam Vihar RPC</title>
+<title>POD Management Tool — By Ashu</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0B1E33;--navy2:#16304F;--navy3:#1E3F6A;
-  --blue:#1565C0;--blue2:#1976D2;--blue-lt:#E3F2FD;--blue-lt2:#BBDEFB;
-  --green:#1B6B3A;--green2:#2E7D52;--green-lt:#E8F5E9;
-  --red:#B71C1C;--red2:#C62828;--red-lt:#FFEBEE;
-  --amber:#E65100;--amber2:#F57C00;--amber-lt:#FFF3E0;
-  --purple:#4527A0;--purple-lt:#EDE7F6;
-  --slate:#F0F4F8;--slate2:#E2E8F0;--border:#CBD5E1;
-  --text:#0B1E33;--text2:#3D5166;--text3:#7A92A8;
-  --white:#fff;
-  --shadow-xs:0 1px 2px rgba(0,0,0,.06);
-  --shadow-sm:0 2px 6px rgba(0,0,0,.08);
-  --shadow:0 4px 16px rgba(0,0,0,.1);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
-  --r:8px;--r-lg:12px;--r-xl:16px;
+  --red:#E53935;--red2:#C62828;--red-lt:#FFF5F5;--red-mid:#FFCDD2;
+  --blue:#1565C0;--blue2:#1E88E5;--blue-lt:#E3F2FD;
+  --green:#2E7D32;--green2:#388E3C;--green-lt:#E8F5E9;
+  --amber:#F59E0B;--amber2:#D97706;--amber-lt:#FFFBEB;
+  --yellow:#FDD835;
+  --ink:#111827;--ink2:#1F2937;--text2:#374151;--text3:#6B7280;
+  --border:#E5E7EB;--slate:#F9FAFB;--slate2:#F3F4F6;--white:#FFFFFF;
+  --r:8px;--r-lg:12px;--r-xl:14px;
+  --sh-sm:0 1px 4px rgba(0,0,0,.08);
+  --sh:0 4px 14px rgba(0,0,0,.1);
+  --sh-lg:0 10px 32px rgba(0,0,0,.15);
 }
-body{font-family:'Inter',sans-serif;background:var(--slate);color:var(--text);min-height:100vh;font-size:13px;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',sans-serif;background:#E8EDF4;color:var(--ink);min-height:100vh;font-size:13px;-webkit-font-smoothing:antialiased}
 
-/* ══ HEADER ══════════════════════════════════════════════ */
+/* ══ HEADER ══ */
 .header{
-  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,var(--navy3) 100%);
-  padding:0 24px;height:60px;
-  display:flex;align-items:center;gap:14px;
-  position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 16px rgba(0,0,0,.35);
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  position:sticky;top:0;z-index:400;
 }
-.h-icon{width:38px;height:38px;background:linear-gradient(135deg,#E8A020,#F5C050);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(232,160,32,.4)}
-.h-text .h-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.2px}
-.h-text .h-sub{font-size:10px;color:#6E8FAA;letter-spacing:.6px;font-weight:500;text-transform:uppercase;margin-top:1px}
+.header-top{
+  background:linear-gradient(90deg,#0D1B2A 0%,#1565C0 40%,#F59E0B 75%,#E53935 100%);
+  height:4px;
+}
+.header-body{
+  height:60px;padding:0 28px;
+  display:flex;align-items:center;gap:16px;
+}
+.h-brand{display:flex;align-items:center;gap:12px}
+.h-icon{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(21,101,192,.35);flex-shrink:0;
+}
+.h-icon svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.h-text .h-title{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.4px}
+.h-text .h-byline{font-size:10.5px;color:var(--text3);font-weight:500;margin-top:1px}
+.h-byline strong{color:var(--blue);font-weight:700}
+.h-sep{width:1px;height:30px;background:var(--border);flex-shrink:0}
+.h-meta{display:flex;flex-direction:column;gap:1px}
+.h-meta-title{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px}
+.h-meta-sub{font-size:10px;color:var(--text3);font-weight:400}
 .h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.h-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:600;color:#fff}
-.h-step-pill{display:none}
+.h-live{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green2);background:var(--green-lt);border:1px solid #C8E6C9;border-radius:20px;padding:4px 12px}
+.h-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green2);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.h-badge{background:var(--blue-lt);border:1px solid #BBDEFB;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace;display:none}
 
-/* ══ STEP INDICATOR ═══════════════════════════════════════ */
-.steps{display:none}
-.step{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.3px;white-space:nowrap;border-bottom:2.5px solid transparent;cursor:default;transition:all .2s;text-transform:uppercase}
-.step.done{color:var(--green2)}
-.step.active{color:var(--blue2);border-bottom-color:var(--blue2)}
-.step .sn{width:20px;height:20px;border-radius:50%;background:var(--slate2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;transition:all .2s}
-.step.done .sn{background:var(--green2);color:#fff}
-.step.active .sn{background:var(--blue2);color:#fff}
-.step-arrow{color:var(--border);font-size:12px;flex-shrink:0}
+/* ══ LAYOUT ══ */
+.page{max-width:1340px;margin:0 auto;padding:20px 20px 60px}
 
-/* ══ PAGE ══════════════════════════════════════════════════ */
-.page{max-width:1320px;margin:0 auto;padding:20px 20px 60px}
+/* ══ SECTION LABEL ══ */
+.section-label{font-size:10.5px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* ══ CARDS ═════════════════════════════════════════════════ */
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-sm);margin-bottom:16px}
-.card-header{padding:14px 20px;border-bottom:1px solid var(--slate2);display:flex;align-items:center;gap:10px}
-.card-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--blue2)}
-.card-title{font-size:13.5px;font-weight:700;color:var(--navy)}
-.card-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+/* ══ CARDS ══ */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:0 2px 8px rgba(21,101,192,.07),0 1px 3px rgba(0,0,0,.05);margin-bottom:16px;overflow:hidden}
+.card-hdr{padding:12px 20px;border-bottom:1px solid var(--slate2);display:flex;align-items:center;gap:10px;background:#FAFAFA}
+.card-hdr-title{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.card-hdr-sub{font-size:11px;color:var(--text3);margin-left:auto}
 .card-body{padding:18px 20px}
 
-/* ══ SETUP CARD ════════════════════════════════════════════ */
-.setup-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
-.field-group{display:flex;flex-direction:column;gap:5px}
-.field-label{font-size:10.5px;font-weight:700;color:var(--text2);letter-spacing:.4px;text-transform:uppercase}
-.field-input{
-  padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r);
-  font-size:13px;font-family:'Inter',sans-serif;background:var(--slate);color:var(--text);
-  transition:all .15s;
-}
-.field-input:focus{outline:none;border-color:var(--blue2);background:var(--white);box-shadow:0 0 0 3px rgba(25,118,210,.1)}
-.field-input::placeholder{color:var(--text3)}
+/* ══ SETUP ══ */
+.setup-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.setup-field{flex:1;min-width:160px}
+.f-label{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px}
+.f-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:'Inter',sans-serif;background:var(--slate);color:var(--ink);transition:all .15s}
+.f-input:focus{outline:none;border-color:var(--blue2);background:var(--white);box-shadow:0 0 0 3px rgba(30,136,229,.1)}
+.f-input::placeholder{color:#9CA3AF}
 
-/* ══ UPLOAD ════════════════════════════════════════════════ */
-.upload-zone{
-  border:2px dashed #B8C8D8;border-radius:var(--r-lg);
-  background:var(--slate);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;
-}
+/* ══ UPLOAD ZONE ══ */
+.upload-zone{border:2px dashed #D1D5DB;border-radius:var(--r-lg);background:var(--slate2);padding:26px 20px;text-align:center;cursor:pointer;transition:all .2s}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--blue2);background:var(--blue-lt)}
-.uz-icon{font-size:36px;margin-bottom:8px}
-.uz-title{font-size:14px;font-weight:700;color:var(--navy2)}
-.uz-sub{font-size:12px;color:var(--text3);margin-top:5px}
+.upload-zone:focus{outline:2px solid var(--blue2);outline-offset:2px}
+.uz-icon-wrap{width:44px;height:44px;background:var(--blue-lt);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border:1px solid #BBDEFB}
+.uz-icon-wrap svg{width:22px;height:22px;fill:none;stroke:var(--blue2);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.uz-t{font-size:13.5px;font-weight:600;color:var(--ink)}
+.uz-s{font-size:12px;color:var(--text3);margin-top:3px}
 .fmt-row{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:10px}
 .fmt{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:10.5px;font-weight:600;color:var(--text2);font-family:'IBM Plex Mono',monospace}
 #fileInput{display:none}
 
-/* ══ STATUS TAB BAR ════════════════════════════════════════ */
-.status-tabs{display:flex;gap:0;background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px}
-.stab{
-  flex:1;padding:14px 10px;text-align:center;cursor:pointer;
-  border-right:1px solid var(--border);transition:all .2s;
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  position:relative;border-bottom:3px solid transparent;
-}
+/* ══ STATUS TABS ══ */
+.status-bar{display:grid;grid-template-columns:repeat(5,1fr);background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--sh-sm);margin-bottom:16px}
+.stab{padding:14px 8px;text-align:center;cursor:pointer;border-right:1px solid var(--border);transition:all .15s;border-bottom:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px}
 .stab:last-child{border-right:none}
-.stab:hover{background:var(--slate)}
-.stab.active{background:var(--blue-lt);border-bottom-color:var(--blue2)}
-.stab.active.pend{background:var(--amber-lt);border-bottom-color:var(--amber2)}
-.stab.active.rto{background:var(--red-lt);border-bottom-color:var(--red2)}
-.stab.active.dto{background:var(--green-lt);border-bottom-color:var(--green2)}
-.stab-icon{font-size:22px}
-.stab-num{font-size:22px;font-weight:800;line-height:1;letter-spacing:-1px}
-.stab-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
-.stab-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0}
-.stab.all  .stab-num{color:var(--navy)}
-.stab.pend .stab-num{color:var(--amber)}
-.stab.rto  .stab-num{color:var(--red2)}
-.stab.dto  .stab-num{color:var(--green2)}
+.stab:hover{background:var(--slate2)}
+.stab.active.s-all{background:#EFF6FF;border-bottom-color:var(--blue2)}
+.stab.active.s-pend{background:#FFFBEB;border-bottom-color:var(--amber2)}
+.stab.active.s-disp{background:var(--blue-lt);border-bottom-color:var(--blue)}
+.stab.active.s-rto{background:var(--red-lt);border-bottom-color:var(--red)}
+.stab.active.s-dto{background:var(--green-lt);border-bottom-color:var(--green2)}
+.stab-num{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1}
+.stab-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+.s-all .stab-num{color:var(--blue)}
+.s-pend .stab-num{color:var(--amber2)}
+.s-disp .stab-num{color:var(--blue2)}
+.s-rto .stab-num{color:var(--red)}
+.s-dto .stab-num{color:var(--green2)}
 
-/* ══ REMARK CHIPS ══════════════════════════════════════════ */
-.chip-section{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
-.chips-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.chip{
-  display:inline-flex;align-items:center;gap:9px;
-  border-radius:var(--r);padding:8px 14px;
-  font-size:12.5px;font-weight:500;
-  border:1.5px solid var(--border);background:var(--slate);
-  cursor:pointer;transition:all .15s;user-select:none;
-}
+/* ══ FE DASHBOARD ══ */
+.fe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+.fe-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;box-shadow:var(--sh-sm);cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.fe-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.fe-card.active-fe::before,.fe-card:hover::before{background:var(--blue2)}
+.fe-card.active-fe{border-color:var(--blue2);background:var(--blue-lt)}
+.fe-card:hover{border-color:var(--blue2);transform:translateY(-1px);box-shadow:var(--sh)}
+.fe-card-name{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:4px;padding-left:6px}
+.fe-card-dsp{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:var(--text3);padding-left:6px}
+.fe-card-stats{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;padding-left:6px}
+.fe-stat{font-size:10.5px;font-weight:600;border-radius:5px;padding:2px 8px}
+.fe-stat.pend{background:var(--amber-lt);color:var(--amber2)}
+.fe-stat.rto{background:var(--red-lt);color:var(--red2)}
+.fe-stat.dto{background:var(--green-lt);color:var(--green2)}
+.fe-stat.total{background:var(--slate2);color:var(--text2)}
+.fe-del-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border:none;background:none;color:#D1D5DB;cursor:pointer;border-radius:5px;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.fe-del-btn:hover{background:var(--red-lt);color:var(--red2)}
+.fe-empty{text-align:center;padding:20px;color:var(--text3);font-size:12px;background:var(--white);border:1px dashed var(--border);border-radius:var(--r-lg);grid-column:1/-1}
+.fe-card.duplicate{border-color:var(--red);background:var(--red-lt);}
+.fe-card.duplicate::before{background:var(--red)!important}
+.fe-card.duplicate .fe-card-name{color:var(--red2)}
+.fe-dup-badge{font-size:9.5px;font-weight:700;background:var(--red);color:#fff;border-radius:4px;padding:1px 7px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.3px}
+
+/* ══ REMARK CHIPS ══ */
+.remark-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:16px;box-shadow:var(--sh-sm);display:none}
+.rc-top{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.rc-title{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px}
+.rc-sub{font-size:12px;color:var(--text3)}
+.rc-back{margin-left:auto;background:var(--ink2);color:#fff;border:none;border-radius:var(--r);padding:6px 14px;font-size:11.5px;font-weight:600;cursor:pointer;display:none;align-items:center;font-family:'Inter',sans-serif;transition:background .15s}
+.rc-back:hover{background:var(--ink)}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:9px;border-radius:var(--r);padding:8px 14px;font-size:12.5px;font-weight:500;border:1.5px solid var(--border);background:var(--slate2);cursor:pointer;transition:all .15s;user-select:none}
 .chip:hover{border-color:var(--blue2);background:var(--blue-lt);color:var(--blue)}
-.chip.active{border-color:var(--blue2);background:var(--blue2);color:#fff}
-.chip.rej{border-color:#FFCDD2;background:var(--red-lt);color:var(--red2)}
+.chip.active{border-color:var(--blue);background:var(--blue);color:#fff}
+.chip.rej{border-color:var(--red-mid);background:var(--red-lt);color:var(--red2)}
 .chip.rej:hover,.chip.rej.active{background:var(--red2);color:#fff;border-color:var(--red2)}
-.chip-label{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chip-count{background:rgba(0,0,0,.09);border-radius:12px;padding:1px 9px;font-size:11px;font-weight:700;white-space:nowrap}
-.chip.active .chip-count,.chip.rej.active .chip-count,.chip.rej:hover .chip-count{background:rgba(255,255,255,.22)}
-.chip-all-btn{background:none;border:1.5px solid var(--border);border-radius:var(--r);padding:7px 14px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
-.chip-all-btn:hover{border-color:var(--navy2);color:var(--navy2)}
+.chip-lbl{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-cnt{background:rgba(0,0,0,.1);border-radius:12px;padding:1px 9px;font-size:11px;font-weight:700;white-space:nowrap}
+.chip.active .chip-cnt,.chip.rej.active .chip-cnt,.chip.rej:hover .chip-cnt{background:rgba(255,255,255,.25)}
 
-/* ══ ACTION BAR ════════════════════════════════════════════ */
+/* ══ ACTION BAR ══ */
 .action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 17px;border-radius:var(--r);border:1.5px solid transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;letter-spacing:.1px}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--blue2);color:#fff}.btn-primary:hover{background:var(--blue)}
-.btn-green{background:var(--green2);color:#fff}.btn-green:hover{background:var(--green)}
-.btn-red{background:var(--red2);color:#fff}.btn-red:hover{background:var(--red)}
-.btn-amber{background:var(--amber2);color:#fff}.btn-amber:hover{background:var(--amber)}
-.btn-ghost{background:var(--white);border-color:var(--border);color:var(--text2)}.btn-ghost:hover{border-color:var(--navy2);color:var(--navy2);background:var(--slate)}
-.btn-danger{background:var(--red-lt);border-color:#FFCDD2;color:var(--red2)}.btn-danger:hover{background:var(--red2);color:#fff;border-color:var(--red2)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r);border:1.5px solid transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:var(--sh)}
+.btn:active{transform:scale(.97);box-shadow:none;opacity:1}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-green{background:var(--green2);color:#fff}
+.btn-ghost{background:var(--white);border-color:var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--ink2);color:var(--ink);transform:none;box-shadow:none}
+.btn-danger{background:var(--red-lt);border-color:var(--red-mid);color:var(--red2)}
+.btn-danger:hover{background:var(--red2);color:#fff;border-color:var(--red2)}
 .btn-sm{padding:6px 12px;font-size:11px}
 .spacer{flex:1}
 
-/* ══ TABLE ════════════════════════════════════════════════ */
-.tbl-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm)}
-.tbl-toolbar{display:flex;align-items:center;gap:10px;padding:12px 18px;background:#FAFBFD;border-bottom:1px solid var(--slate2);flex-wrap:wrap}
-.tbl-label{font-size:11px;font-weight:700;color:var(--navy2);text-transform:uppercase;letter-spacing:.5px}
-.tbl-count{background:var(--slate);border:1px solid var(--border);border-radius:12px;padding:2px 12px;font-size:11.5px;font-weight:700;color:var(--text2)}
+/* ══ TABLE ══ */
+.tbl-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--sh-sm)}
+.tbl-bar{display:flex;align-items:center;gap:10px;padding:11px 18px;background:#FAFAFA;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tbl-lbl{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px}
+.tbl-cnt{background:var(--slate2);border:1px solid var(--border);border-radius:12px;padding:2px 12px;font-size:11.5px;font-weight:700;color:var(--text3)}
+.tbl-intact{background:var(--red-lt);border:1px solid var(--red-mid);border-radius:12px;padding:3px 12px;font-size:11px;font-weight:700;color:var(--red2);display:none;cursor:pointer;transition:all .15s}
+.tbl-intact:hover{background:var(--red2);color:#fff}
 .sel-lbl{font-size:11.5px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500}
-
-.tbl-wrap{overflow:auto;max-height:520px}
+.tbl-scroll{overflow:auto;max-height:600px;will-change:scroll-position}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
-thead th{background:var(--navy2);color:rgba(255,255,255,.88);padding:9px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;z-index:2;white-space:nowrap}
+thead th{background:#0D1B2A;color:rgba(255,255,255,.92);padding:10px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;z-index:2;white-space:nowrap}
 thead th.tc{text-align:center}
 tbody tr{transition:background .08s}
-tbody tr:hover td{background:#F5F8FE}
-tbody tr.sel-row td{background:#DDEEFF!important}
-tbody tr.rej-row td{background:var(--red-lt)}
-tbody tr.rej-row:hover td{background:#FFD9D9}
-tbody tr.rej-row.sel-row td{background:#FFBBBB!important}
-
-/* DSP GROUP ROW */
-tbody tr.dsp-hdr td{
-  background:linear-gradient(90deg,var(--navy) 0%,var(--navy3) 100%);
-  color:#fff;padding:8px 13px;
-  font-size:11px;font-weight:700;letter-spacing:.5px;
-}
-.dsp-grp-inner{display:flex;align-items:center;gap:10px}
-.dsp-grp-name{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#E8D5A0}
-.dsp-grp-count{background:rgba(232,160,32,.85);color:var(--navy);border-radius:10px;padding:1px 10px;font-size:10px;font-weight:800}
-.dsp-grp-fe{font-size:10.5px;color:#8AACCC;margin-left:auto;font-weight:500}
-
-tbody td{padding:8px 13px;border-bottom:1px solid #EEF2F8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;max-width:180px}
+tbody tr:hover td{background:#F0F7FF}
+tbody tr.sel-row td{background:#E3F2FD!important}
+tbody tr.rej-row td{background:#FFF5F5}
+tbody tr.rej-row:hover td{background:#FFEBEE}
+tbody tr.rej-row.sel-row td{background:#FFCDD2!important}
+tbody tr.kb-focus td{background:#BBDEFB!important}
+tbody td{padding:8px 13px;border-bottom:1px solid #F3F4F6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;max-width:200px}
 td.tc{text-align:center}
-.awb-cell{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--navy2);font-weight:500}
-.client-cell{font-size:12px;color:var(--text2)}
-.remark-cell{font-size:11.5px;color:var(--text2)}
-.remark-pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;background:var(--amber-lt);color:var(--amber);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
-.remark-pill.rej{background:var(--red-lt);color:var(--red2)}
-
-.del-btn{width:26px;height:26px;border:none;background:none;color:#BBC8D4;cursor:pointer;border-radius:6px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+.dsp-row td{background:linear-gradient(90deg,#0D1B2A 0%,#1565C0 70%,#1E3A5F 100%)!important;padding:7px 13px!important}
+.dsp-inner{display:flex;align-items:center;gap:10px}
+.dsp-name{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--yellow)}
+.dsp-cnt{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.5);color:#FCD34D;border-radius:10px;padding:2px 12px;font-size:10.5px;font-weight:800;letter-spacing:.2px}
+.dsp-fe{font-size:10.5px;color:#94A3B8;margin-left:auto}
+.awb-cell{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--blue);font-weight:600}
+.remark-pill{display:inline-block;padding:2px 9px;border-radius:6px;font-size:10.5px;font-weight:600;background:var(--amber-lt);color:#92400E;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;border:1px solid #FDE68A}
+.remark-pill.rej{background:var(--red-lt);color:var(--red2);border:1px solid var(--red-mid)}
+.del-btn{width:26px;height:26px;border:none;background:none;color:#D1D5DB;cursor:pointer;border-radius:6px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
 .del-btn:hover{background:var(--red-lt);color:var(--red2)}
 
-/* ══ EMPTY ═════════════════════════════════════════════════ */
-.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
-.empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
-.empty-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px}
-.empty-sub{font-size:12.5px}
+/* ══ INTACT MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--r-xl);width:100%;max-width:640px;box-shadow:var(--sh-lg);overflow:hidden;animation:mIn .2s ease}
+@keyframes mIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-hdr{background:linear-gradient(90deg,var(--red2),var(--red));padding:14px 20px;display:flex;align-items:center;gap:10px}
+.modal-hdr h2{color:#fff;font-size:14px;font-weight:700;flex:1}
+.m-cnt{background:rgba(255,255,255,.2);color:#fff;border-radius:12px;padding:2px 12px;font-size:12px;font-weight:700}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:rgba(255,255,255,.15);color:#fff}
+.modal-body{padding:16px 20px;max-height:420px;overflow-y:auto}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:#FAFAFA}
+.modal-awb-list{display:flex;flex-direction:column;gap:6px}
+.m-awb-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--red-lt);border:1px solid var(--red-mid);border-radius:var(--r)}
+.m-awb-item .awb-v{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--blue);flex:1}
+.m-awb-item .awb-r{font-size:11px;color:var(--red2);font-weight:600}
 
-/* ══ TOAST ════════════════════════════════════════════════ */
-#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:600;display:none;z-index:9999;box-shadow:var(--shadow-lg);white-space:nowrap;pointer-events:none}
-#toast.ok{background:#0A2010;color:#6EE7A6;border:1px solid rgba(110,231,166,.25)}
-#toast.err{background:#200808;color:#FCA5A5;border:1px solid rgba(252,165,165,.25)}
-#toast.info{background:var(--navy);color:#93C5FD;border:1px solid rgba(147,197,253,.25)}
+/* ══ EMPTY ══ */
+.empty-state{text-align:center;padding:52px 20px;color:var(--text3)}
+.es-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:5px}
+.es-sub{font-size:12px}
 
-/* ══ RESPONSIVE ════════════════════════════════════════════ */
-@media(max-width:700px){
-  .setup-grid{grid-template-columns:1fr 1fr}
-  .page{padding:14px 12px 40px}
-  .steps{padding:0 12px}
-  .header{padding:0 14px}
-  .h-step-pill{display:none}
-}
-@media(max-width:480px){
-  .setup-grid{grid-template-columns:1fr}
-  .status-tabs{flex-wrap:wrap}
-  .stab{min-width:50%}
-}
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:600;display:none;z-index:9999;box-shadow:var(--sh-lg);white-space:nowrap;pointer-events:none}
+#toast.ok{background:#052E0F;color:#6EE7A6;border:1px solid rgba(110,231,166,.2)}
+#toast.err{background:#2D0808;color:#FCA5A5;border:1px solid rgba(252,165,165,.2)}
+#toast.info{background:var(--ink2);color:#93C5FD;border:1px solid rgba(147,197,253,.15)}
 
-/* keyboard focus row */
-tbody tr.kb-focus td { background: #C8DCF8 !important; outline: 2px solid var(--blue2); outline-offset: -2px; }
-tbody tr.kb-focus.rej-row td { background: #FFBBCC !important; }
-/* upload zone focusable */
-.upload-zone:focus { outline: 2px solid var(--blue2); outline-offset: 2px; }
-
+@media(max-width:700px){.setup-row{flex-direction:column}.status-bar{grid-template-columns:repeat(3,1fr)}.page{padding:12px 12px 40px}}
+@media(max-width:460px){.status-bar{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ══ HEADER ══ -->
 <div class="header">
-  <div class="h-icon">🚚</div>
-  <div class="h-text">
-    <div class="h-title">Delhivery POD Management Tool</div>
-    <div class="h-sub">Palam Vihar RPC &nbsp;·&nbsp; Delhivery Operations</div>
-  </div>
-  <div class="h-right">
-    <span class="h-step-pill" style="cursor:pointer;opacity:.7" title="Keyboard shortcuts" onclick="toast('← → Tabs | ↑ ↓ Rows | Enter Select | Del Delete | Ctrl+U Upload | Ctrl+D Download | Ctrl+S Save | Ctrl+N New FE','info',5000)">⌨ Shortcuts</span>
-    <span class="h-badge" id="rowBadge" style="display:none">0 rows</span>
+  <div class="header-top"></div>
+  <div class="header-body">
+    <div class="h-brand">
+      <div class="h-icon">
+        <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <div class="h-text">
+        <div class="h-title">POD Management Tool</div>
+        <div class="h-byline">Delhivery &nbsp;·&nbsp; Palam Vihar RPC &nbsp;·&nbsp; <strong>By Ashu</strong></div>
+      </div>
+    </div>
+    <div class="h-sep"></div>
+    <div class="h-meta">
+      <div class="h-meta-title">Field Operations Dashboard</div>
+      <div class="h-meta-sub">Manage · Track · Export</div>
+    </div>
+    <div class="h-right">
+      <div class="h-live"><span class="h-live-dot"></span>Live</div>
+      <span class="h-badge" id="rowBadge">0 rows</span>
+    </div>
   </div>
 </div>
 
-
-
 <div class="page">
 
-<!-- ══ STEP 1: SETUP ══════════════════════════════════════ -->
-<div class="card" id="setupCard">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Daily POD Entry</div>
-    </div>
-  </div>
+<!-- ══ SESSION SETUP ══ -->
+<div class="section-label">Session Setup</div>
+<div class="card">
   <div class="card-body">
-    <div class="setup-grid">
-      <div class="field-group">
-        <label class="field-label">FE Name</label>
-        <input class="field-input" type="text" id="feName" placeholder="Field Executive name">
+    <div class="setup-row">
+      <div class="setup-field">
+        <label class="f-label" for="feName">Field Executive (FE) Name</label>
+        <input class="f-input" type="text" id="feName" placeholder="Enter FE name" autocomplete="off" oninput="autoSaveDebounce()">
       </div>
-      <div class="field-group">
-        <label class="field-label">DSP ID</label>
-        <input class="field-input" type="text" id="dspId" placeholder="e.g. DLEC0001">
+      <div class="setup-field">
+        <label class="f-label" for="dspId">DSP ID</label>
+        <input class="f-input" type="text" id="dspId" placeholder="e.g. DLEC0001" autocomplete="off" oninput="autoSaveDebounce()">
       </div>
-      <div class="field-group">
-        <label class="field-label">Date</label>
-        <input class="field-input" type="date" id="dateVal">
+      <div class="setup-field" style="max-width:180px">
+        <label class="f-label" for="dateVal">Date</label>
+        <input class="f-input" type="date" id="dateVal" onchange="autoSaveDebounce()">
+      </div>
+      <div class="setup-field" style="display:flex;align-items:flex-end;max-width:160px">
+        <button class="btn btn-blue" style="width:100%;justify-content:center" onclick="saveSession()">💾 Save Session</button>
       </div>
     </div>
 
-    <!-- FE SESSION LIST -->
-    <div id="feSessionBar" style="display:none;margin-bottom:14px;background:var(--slate);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 16px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)">📋 Today's FE Session</span>
-        <span id="feTotalBadge" style="background:var(--blue2);color:#fff;border-radius:10px;padding:1px 10px;font-size:11px;font-weight:700">0 FE | 0 pkts</span>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addNewFE()">➕ Add New FE</button>
-        <button class="btn btn-green btn-sm" onclick="downloadAllFE()">⬇ Download All FE Data</button>
-      </div>
-      <div id="feChipList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-    </div>
-    <div class="upload-zone" id="uploadZone"
-      onclick="document.getElementById('fileInput').click()"
+    <div class="upload-zone" id="uploadZone" tabindex="0"
+      onclick="triggerFileInput()"
+      onkeydown="if(event.key==='Enter')document.getElementById('fileInput').click()"
       ondragover="event.preventDefault();this.classList.add('drag')"
       ondragleave="this.classList.remove('drag')"
       ondrop="handleDrop(event)">
-      <div class="uz-icon">📂</div>
-      <div class="uz-title">File Upload karo</div>
-      <div class="uz-sub">Koi bhi format — xlsx, csv, xls, ods</div>
+      <div class="uz-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="uz-t">Drop Delhivery export file here, or click to upload</div>
+      <div class="uz-s">Data will be saved automatically for current session</div>
       <div class="fmt-row">
         <span class="fmt">.xlsx</span><span class="fmt">.xls</span><span class="fmt">.csv</span><span class="fmt">.tsv</span><span class="fmt">.ods</span>
       </div>
@@ -285,79 +300,92 @@ tbody tr.kb-focus.rej-row td { background: #FFBBCC !important; }
   </div>
 </div>
 
-<!-- ══ STEP 2: STATUS TABS ════════════════════════════════ -->
+<!-- ══ FE DASHBOARD ══ -->
+<div class="section-label" style="gap:10px">
+  <span>All FE Sessions — Saved Data</span>
+  <button class="btn btn-danger btn-sm" onclick="clearAllSessions()" style="margin-left:auto;font-size:10.5px;padding:4px 12px">🗑 Clear All Sessions (New Day)</button>
+</div>
+<div class="fe-grid" id="feGrid">
+  <div class="fe-empty" id="feEmpty">No sessions saved yet. Upload a file after filling FE Name &amp; DSP ID.</div>
+</div>
+
+<!-- ══ MAIN DATA SECTION ══ -->
 <div id="mainSection" style="display:none">
 
-  <!-- Status Tab Bar -->
-  <div class="status-tabs">
-    <div class="stab all active" id="tabAll" onclick="setStatusFilter('all')">
-      <span class="stab-icon">📦</span>
+  <div class="section-label" id="currentSessionLabel">Current Session</div>
+
+  <!-- STATUS TABS -->
+  <div class="status-bar">
+    <div class="stab s-all active" id="tabAll" onclick="setFilter('all')">
       <span class="stab-num" id="cntAll">0</span>
       <span class="stab-lbl">All</span>
     </div>
-    <div class="stab pend" id="tabPend" onclick="setStatusFilter('pending')">
-      <span class="stab-icon">⏳</span>
+    <div class="stab s-pend" id="tabPend" onclick="setFilter('pending')">
       <span class="stab-num" id="cntPend">0</span>
       <span class="stab-lbl">Pending</span>
     </div>
-    <div class="stab" id="tabDisp" onclick="setStatusFilter('dispatched')" style="--tab-clr:var(--blue2)">
-      <span class="stab-icon">🚴</span>
-      <span class="stab-num" id="cntDisp" style="color:var(--blue2)">0</span>
+    <div class="stab s-disp" id="tabDisp" onclick="setFilter('dispatched')">
+      <span class="stab-num" id="cntDisp">0</span>
       <span class="stab-lbl">Dispatch</span>
     </div>
-    <div class="stab rto" id="tabRTO" onclick="setStatusFilter('rto')">
-      <span class="stab-icon">↩️</span>
+    <div class="stab s-rto" id="tabRTO" onclick="setFilter('rto')">
       <span class="stab-num" id="cntRTO">0</span>
       <span class="stab-lbl">RTO</span>
     </div>
-    <div class="stab dto" id="tabDTO" onclick="setStatusFilter('dto')">
-      <span class="stab-icon">✅</span>
+    <div class="stab s-dto" id="tabDTO" onclick="setFilter('dto')">
       <span class="stab-num" id="cntDTO">0</span>
       <span class="stab-lbl">DTO</span>
     </div>
   </div>
 
-  <!-- Remark Filter (shown only for pending) -->
-  <div class="chip-section" id="remarkSection" style="display:none">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <!-- REMARK CHIPS — pending only -->
+  <div class="remark-card" id="remarkCard">
+    <div class="rc-top">
       <div>
-        <div class="card-title">Remark-wise Breakdown</div>
+        <div class="rc-title">Remark-wise Breakdown — Pending</div>
+        <div class="rc-sub" id="rcSub">Click any remark chip to filter the table below</div>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <span id="remarkFilterLabel" style="font-size:11.5px;color:var(--text3)">Click a remark to filter</span>
-        <button class="chip-all-btn" id="showAllChipBtn" onclick="clearRemarkFilter()" style="display:none">← Show All Pending</button>
-      </div>
+      <button class="rc-back" id="rcBack" onclick="clearRemarkFilter()">← Show All Pending</button>
     </div>
-    <div class="chips-grid" id="chipsGrid"></div>
+    <div class="chips-wrap" id="chipsWrap"></div>
   </div>
 
-  <!-- Action Buttons -->
-  <div class="action-bar" id="actionBar">
-    <div id="abLeft" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
-    <div class="spacer"></div>
-    <div id="abRight" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="btn btn-green" onclick="downloadExcel()">Download Excel</button>
+    <button class="btn btn-blue" onclick="copyTable()">Copy Table</button>
+    <span id="selBtnWrap" style="display:none">
+      <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected (<span id="selCnt">0</span>)</button>
+    </span>
+    <span class="spacer"></span>
+    <button class="btn btn-ghost btn-sm" onclick="clearCurrentSession()">Clear Session</button>
   </div>
 
-  <!-- Table -->
+  <!-- TABLE -->
   <div class="tbl-card" id="tblCard">
-    <div class="tbl-toolbar">
-      <span class="tbl-label" id="tblLabel">Shipments</span>
-      <span class="tbl-count" id="tblCount">0</span>
+    <div class="tbl-bar">
+      <span class="tbl-lbl" id="tblLbl">Shipments</span>
+      <span class="tbl-cnt" id="tblCnt">0 rows</span>
+      <span class="tbl-intact" id="intactBadge" onclick="openIntactModal()">Intact: <span id="intactCnt">0</span> pkts — View</span>
       <span class="spacer"></span>
+      <input type="search" id="tblSearch" placeholder="🔍 Search AWB / Client..." oninput="onSearch()"
+        style="padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:12px;
+        font-family:'Inter',sans-serif;background:var(--slate);color:var(--ink);width:180px;outline:none">
       <label class="sel-lbl"><input type="checkbox" id="selAll" onchange="toggleSelAll(this)"> Select All</label>
     </div>
-    <div class="tbl-wrap">
+    <div class="tbl-scroll">
       <table>
         <colgroup>
-          <col style="width:34px"><col style="width:32px">
-          <col style="width:120px"><col style="width:110px"><col style="width:155px">
-          <col style="width:130px"><col style="width:130px"><col style="width:auto"><col style="width:120px">
+          <col style="width:34px"><col style="width:30px"><col style="width:100px">
+          <col style="width:150px"><col style="width:120px"><col style="width:120px">
+          <col style="width:auto"><col style="width:110px">
         </colgroup>
         <thead>
           <tr>
             <th class="tc">☑</th><th></th>
-            <th>Date</th><th>DSP ID</th><th>AWB Number</th>
-            <th>Client</th><th>Order ID</th><th>Remark</th><th>FE Name</th>
+            <th>DSP ID</th><th>AWB Number</th>
+            <th>Client</th><th>Order ID</th>
+            <th>Remark</th><th>FE Name</th>
           </tr>
         </thead>
         <tbody id="mainBody"></tbody>
@@ -365,146 +393,269 @@ tbody tr.kb-focus.rej-row td { background: #FFBBCC !important; }
     </div>
   </div>
 
-  <!-- Empty State -->
   <div class="empty-state" id="emptyState" style="display:none">
-    <div class="empty-icon">🔍</div>
-    <div class="empty-title">No shipments found</div>
-    <div class="empty-sub">Try a different filter or upload a new file</div>
-  </div>
-
-  <!-- Reset -->
-  <div style="text-align:center;margin-top:24px">
-    <button class="btn btn-ghost btn-sm" onclick="clearAll()">✕ Clear &amp; Upload New File</button>
+    <div class="es-title">No shipments found</div>
+    <div class="es-sub">Try a different filter or status tab</div>
   </div>
 
 </div><!-- /mainSection -->
+
+<!-- ══ INTACT MODAL ══ -->
+<div class="modal-overlay" id="intactModal" onclick="if(event.target===this)closeIntactModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>Reject But Intact — Shipments</h2>
+      <span class="m-cnt" id="mIntactCnt">0 pkts</span>
+      <button class="modal-close" onclick="closeIntactModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-awb-list" id="mIntactList"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-green btn-sm" onclick="downloadIntact()">Download Excel</button>
+      <button class="btn btn-blue btn-sm" onclick="copyIntact()">Copy AWBs</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeIntactModal()">Close</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- /page -->
 <div id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
+/* ══════════════════════════════════════
    STATE
-══════════════════════════════════════════════════════════ */
-let allData = [];
+══════════════════════════════════════ */
+let sessions = {};      // { sessionKey: { fe, dsp, date, rows:[] } }
+let searchQuery = '';   // AWB/client search filter
+let activeKey = null;   // currently viewed session key
 let statusFilter = 'all';
 let activeRemark = null;
-let currentFE = null; // {name, dspId, date}
-
-// SESSION: array of FE objects {name, dspId, date, rows[]}
-// Stored in sessionStorage — clears when tab is closed, survives refresh
-let session = [];
-
 const REJ_KW = ['reject but intact','reject but','intact'];
+const LS_KEY = 'pod_tool_sessions_v1';
 
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
 document.getElementById('dateVal').valueAsDate = new Date();
 
-/* ── SESSION STORAGE ────────────────────────────────────── */
-function saveSession() {
-  try { sessionStorage.setItem('pod_session', JSON.stringify(session)); } catch(e){}
+function triggerFileInput(){
+  const fi = document.getElementById('fileInput');
+  fi.value = '';  // reset so same file can be re-uploaded
+  fi.click();
 }
-function loadSession() {
-  try {
-    const raw = sessionStorage.getItem('pod_session');
-    if (raw) { session = JSON.parse(raw); refreshFEBar(); }
-  } catch(e) { session = []; }
-}
-loadSession(); // load on page start
+loadSessionsFromStorage();
+renderFEGrid();
 
-function refreshFEBar() {
-  const bar = document.getElementById('feSessionBar');
-  const chipList = document.getElementById('feChipList');
-  const badge = document.getElementById('feTotalBadge');
-  if (!session.length) { bar.style.display='none'; return; }
-  bar.style.display = 'block';
-  const totalPkts = session.reduce((s,fe)=>s+fe.rows.length,0);
-  badge.textContent = session.length+' FE | '+totalPkts+' pkts';
-  chipList.innerHTML = session.map((fe,i) => `
-    <div style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px">
-      <span style="font-weight:700;color:var(--navy2)">${esc(fe.dspId)}</span>
-      <span style="color:var(--text2)">${esc(fe.name)}</span>
-      <span style="background:var(--blue2);color:#fff;border-radius:8px;padding:1px 8px;font-size:10.5px;font-weight:700">${fe.rows.length} pkts</span>
-      <button onclick="removeFE(${i})" style="border:none;background:none;color:#aaa;cursor:pointer;font-size:12px;padding:0 2px" title="Remove">✕</button>
-    </div>`).join('');
-}
-
-function saveFEToSession() {
-  if (!allData.length || !currentFE) return;
-  const fe = document.getElementById('feName').value.trim();
-  const dsp = document.getElementById('dspId').value.trim();
-  const date = document.getElementById('dateVal').value;
-  if (!fe || !dsp) { toast('FE Name aur DSP ID daalo pehle','err'); return; }
-  // Update or add
-  const existing = session.findIndex(s => s.dspId === dsp);
-  const entry = { name: fe, dspId: dsp, date: date, rows: allData.slice() };
-  if (existing >= 0) session[existing] = entry;
-  else session.push(entry);
-  saveSession();
-  refreshFEBar();
-  toast('✓ '+fe+' ('+allData.length+' pkts) session me save hua','ok');
-}
-
-function addNewFE() {
-  // Save current FE first if data loaded
-  if (allData.length) saveFEToSession();
-  // Reset for new FE
-  allData = []; statusFilter = 'all'; activeRemark = null; currentFE = null;
-  document.getElementById('feName').value = '';
-  document.getElementById('dspId').value = '';
-  document.getElementById('mainSection').style.display = 'none';
-  document.getElementById('rowBadge').style.display = 'none';
-  document.getElementById('fileInput').value = '';
-  setSteps(1);
-  toast('New FE ke liye DSP ID daalo aur file upload karo','info');
-}
-
-function removeFE(i) {
-  session.splice(i,1);
-  saveSession();
-  refreshFEBar();
-  toast('FE removed from session','info');
-}
-
-function downloadAllFE() {
-  if (!session.length) { toast('Koi FE session nahi hai','err'); return; }
-  const wb = XLSX.utils.book_new();
-  // Combined sheet
-  const allRows = [['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']];
-  session.forEach(fe => {
-    fe.rows.filter(r=>r.status==='pending').forEach(r => {
-      allRows.push([fe.date, fe.dspId, r.waybill, r.client, r.order, r.remark, fe.name]);
-    });
-  });
-  const ws = XLSX.utils.aoa_to_sheet(allRows);
-  ws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
-  XLSX.utils.book_append_sheet(wb, ws, 'All FE Pending');
-  // Per-FE sheets
-  session.forEach(fe => {
-    const feRows = [['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']];
-    fe.rows.filter(r=>r.status==='pending').forEach(r => {
-      feRows.push([fe.date, fe.dspId, r.waybill, r.client, r.order, r.remark, fe.name]);
-    });
-    const fws = XLSX.utils.aoa_to_sheet(feRows);
-    fws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
-    const shName = (fe.dspId||fe.name).replace(/[^a-zA-Z0-9]/g,'_').slice(0,28);
-    XLSX.utils.book_append_sheet(wb, fws, shName);
-  });
-  const date = document.getElementById('dateVal').value || 'today';
-  XLSX.writeFile(wb, 'All_FE_POD_'+date+'.xlsx');
-  toast('✓ All FE data downloaded','ok');
-}
-
-
-/* ── UTILS ─────────────────────────────────────────────── */
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
 function toast(msg, type='info', d=3000){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=type; t.style.display='block';
-  clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',d);
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none', d);
 }
-function isRej(r){ return REJ_KW.some(k=>(r||'').toLowerCase().includes(k)); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function isRej(r){ return REJ_KW.some(k=>(r||'').toLowerCase().includes(k)); }
+function makeKey(fe, dsp){ return (fe+'__'+dsp).toLowerCase().replace(/\s+/g,'_'); }
 
-/* ── FILE LOAD ──────────────────────────────────────────── */
+/* ══════════════════════════════════════
+   LOCAL STORAGE
+══════════════════════════════════════ */
+function loadSessionsFromStorage(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){ sessions={}; return; }
+    const parsed=JSON.parse(raw);
+    // Detect compressed format (has 'f' key) vs old format (has 'fe' key)
+    const firstVal=Object.values(parsed)[0];
+    if(!firstVal){ sessions={}; return; }
+    if(firstVal.fe!==undefined){
+      // Old uncompressed format — use as-is
+      sessions=parsed;
+    } else {
+      // Compressed format — expand
+      sessions={};
+      Object.entries(parsed).forEach(([k,s])=>{
+        sessions[k]={
+          fe:s.f, dsp:s.d, date:s.t,
+          rows:(s.r||[]).map(r=>({
+            id:r.i, waybill:r.w, client:r.c,
+            order:r.o, status:r.s, remark:r.m,
+            isRej:r.j===1, sel:false
+          }))
+        };
+      });
+    }
+  } catch(e){ sessions={}; }
+}
+function saveSessionsToStorage(){
+  try{
+    // Compress: store rows with short keys to save space
+    const compressed={};
+    Object.entries(sessions).forEach(([k,s])=>{
+      compressed[k]={
+        f:s.fe, d:s.dsp, t:s.date,
+        r:(s.rows||[]).map(r=>({
+          i:r.id, w:r.waybill, c:r.client,
+          o:r.order, s:r.status, m:r.remark,
+          j:r.isRej?1:0
+        }))
+      };
+    });
+    localStorage.setItem(LS_KEY, JSON.stringify(compressed));
+  } catch(e){
+    // If still full, try saving only current session
+    try{
+      if(activeKey&&sessions[activeKey]){
+        const s=sessions[activeKey];
+        const single={};
+        single[activeKey]={f:s.fe,d:s.dsp,t:s.date,r:(s.rows||[]).map(r=>({i:r.id,w:r.waybill,c:r.client,o:r.order,s:r.status,m:r.remark,j:r.isRej?1:0}))};
+        localStorage.setItem(LS_KEY, JSON.stringify(single));
+        toast('Storage limited — only current session saved. Use Download Excel for others.','err',5000);
+      }
+    } catch(e2){ toast('Storage full — use Download Excel to backup','err',5000); }
+  }
+}
+
+/* ══════════════════════════════════════
+   SESSION MANAGEMENT
+══════════════════════════════════════ */
+let _autoSaveTimer=null;
+function autoSaveDebounce(){
+  // Do nothing on typing — session card only created after file upload
+  clearTimeout(_autoSaveTimer);
+}
+
+function saveSession(silent=false){
+  const fe   = document.getElementById('feName').value.trim();
+  const dsp  = document.getElementById('dspId').value.trim();
+  const date = document.getElementById('dateVal').value;
+  if(!fe || !dsp){ if(!silent) toast('Enter FE Name and DSP ID first','err'); return; }
+  const key = makeKey(fe, dsp);
+  if(!sessions[key]){
+    sessions[key] = { fe, dsp, date, rows:[] };
+    saveSessionsToStorage();
+    renderFEGrid();
+    if(!silent) toast('✓ Session created — upload file now','ok');
+  } else {
+    sessions[key].date = date;
+    sessions[key].fe = fe;
+    sessions[key].dsp = dsp;
+    saveSessionsToStorage();
+    if(!silent) toast('Session updated & loaded','info');
+  }
+  viewSession(key);
+}
+
+function viewSession(key){
+  activeKey = key;
+  statusFilter = 'all';
+  activeRemark = null;
+  searchQuery = '';
+  const se=document.getElementById('tblSearch'); if(se) se.value='';
+  const s = sessions[key];
+  document.getElementById('feName').value = s.fe;
+  document.getElementById('dspId').value  = s.dsp;
+  document.getElementById('dateVal').value = s.date;
+  document.getElementById('currentSessionLabel').textContent = `Current: ${s.fe} — ${s.dsp}`;
+  document.getElementById('mainSection').style.display = 'block';
+  document.getElementById('rowBadge').textContent = s.rows.length + ' rows';
+  document.getElementById('rowBadge').style.display = 'flex';
+  // mark active card
+  document.querySelectorAll('.fe-card').forEach(c=>c.classList.remove('active-fe'));
+  const card = document.querySelector(`.fe-card[data-key="${key}"]`);
+  if(card) card.classList.add('active-fe');
+  refreshAll();
+}
+
+function clearAllSessions(){
+  const n=Object.keys(sessions).length;
+  if(!n){toast('No sessions to clear','info');return;}
+  if(!confirm('Clear ALL '+n+' FE sessions? This cannot be undone.')) return;
+  sessions={};
+  activeKey=null;
+  saveSessionsToStorage();
+  document.getElementById('mainSection').style.display='none';
+  document.getElementById('rowBadge').style.display='none';
+  renderFEGrid();
+  // reset inputs
+  document.getElementById('feName').value='';
+  document.getElementById('dspId').value='';
+  document.getElementById('dateVal').valueAsDate=new Date();
+  toast('✓ All sessions cleared — ready for new day','ok',4000);
+}
+
+function deleteSession(key, e){
+  e && e.stopPropagation();
+  if(!confirm('Delete this FE session permanently?')) return;
+  delete sessions[key];
+  saveSessionsToStorage();
+  if(activeKey === key){
+    activeKey = null;
+    document.getElementById('mainSection').style.display = 'none';
+    document.getElementById('rowBadge').style.display = 'none';
+  }
+  renderFEGrid();
+  toast('Session deleted','info');
+}
+
+function clearCurrentSession(){
+  if(!activeKey) return;
+  if(!confirm('Clear all data for this session?')) return;
+  sessions[activeKey].rows = [];
+  saveSessionsToStorage();
+  refreshAll();
+  renderFEGrid();
+  toast('Session data cleared','info');
+}
+
+/* ══════════════════════════════════════
+   FE GRID
+══════════════════════════════════════ */
+function renderFEGrid(){
+  const grid = document.getElementById('feGrid');
+  const keys = Object.keys(sessions);
+  document.getElementById('feEmpty').style.display = keys.length ? 'none' : 'block';
+
+  // remove old cards (not empty placeholder)
+  grid.querySelectorAll('.fe-card').forEach(c=>c.remove());
+
+  // detect duplicate FE names (same name, different DSP)
+  const feNameCount={};
+  keys.forEach(k=>{ const n=(sessions[k].fe||'').toLowerCase(); feNameCount[n]=(feNameCount[n]||0)+1; });
+
+  keys.forEach(key=>{
+    const s = sessions[key];
+    const rows = s.rows || [];
+    const pend  = rows.filter(r=>isPending(r.status)).length;
+    const rto   = rows.filter(r=>isRTO(r.status)).length;
+    const dto   = rows.filter(r=>isDTO(r.status)).length;
+    const intact= rows.filter(r=>isPending(r.status)&&r.isRej).length;
+    const isDup = feNameCount[(s.fe||'').toLowerCase()] > 1;
+
+    const div = document.createElement('div');
+    div.className = 'fe-card' + (activeKey===key?' active-fe':'') + (isDup?' duplicate':'');
+    div.dataset.key = key;
+    div.onclick = ()=>viewSession(key);
+    div.innerHTML = `
+      <button class="fe-del-btn" onclick="deleteSession('${key}',event)" title="Delete session">✕</button>
+      <div class="fe-card-name">${esc(s.fe)}${isDup?'<span class="fe-dup-badge">Duplicate</span>':''}</div>
+      <div class="fe-card-dsp">${esc(s.dsp)} &nbsp;·&nbsp; ${s.date||'—'}</div>
+      <div class="fe-card-stats">
+        <span class="fe-stat total">${rows.length} total</span>
+        <span class="fe-stat pend">${pend} pending</span>
+        ${rto?`<span class="fe-stat rto">${rto} RTO</span>`:''}
+        ${dto?`<span class="fe-stat dto">${dto} DTO</span>`:''}
+        ${intact?`<span class="fe-stat" style="background:var(--red-lt);color:var(--red2)">${intact} intact</span>`:''}
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════════════
+   FILE LOAD
+══════════════════════════════════════ */
 function handleDrop(e){
   e.preventDefault();
   document.getElementById('uploadZone').classList.remove('drag');
@@ -512,9 +663,19 @@ function handleDrop(e){
 }
 function loadFile(file){
   if(!file) return;
+  // auto-save session if not exists
+  const fe  = document.getElementById('feName').value.trim();
+  const dsp = document.getElementById('dspId').value.trim();
+  if(!fe||!dsp){ toast('Fill FE Name and DSP ID first','err'); return; }
+  const key = makeKey(fe, dsp);
+  if(!sessions[key]){
+    sessions[key] = { fe, dsp, date:document.getElementById('dateVal').value, rows:[] };
+  }
+  activeKey = key;
+
   const name=file.name.toLowerCase(), rd=new FileReader();
   if(name.endsWith('.csv')||name.endsWith('.tsv')){
-    rd.onload=e=>{ const sep=name.endsWith('.tsv')?'\t':detectSep(e.target.result); parseDelim(e.target.result,sep); };
+    rd.onload=e=>{const sep=name.endsWith('.tsv')?'\t':detectSep(e.target.result);parseDelim(e.target.result,sep);};
     rd.readAsText(file);
   } else {
     rd.onload=e=>parseXL(e.target.result);
@@ -529,25 +690,21 @@ function detectSep(txt){
 function parseXL(buf){
   try{
     const wb=XLSX.read(buf,{type:'array',cellText:true,cellDates:true});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    processRows(XLSX.utils.sheet_to_json(ws,{defval:'',raw:false}));
-  }catch(e){ toast('File error: '+e.message,'err'); }
+    processRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false}));
+  }catch(e){toast('File error: '+e.message,'err');}
 }
 function parseDelim(txt,sep){
-  const lines=txt.trim().split(/\r?\n/); if(lines.length<2) return;
-  const hdr=splitL(lines[0],sep), rows=[];
+  const lines=txt.trim().split(/\r?\n/);if(lines.length<2)return;
+  const hdr=splitL(lines[0],sep),rows=[];
   for(let i=1;i<lines.length;i++){
-    const cols=splitL(lines[i],sep); if(cols.length<2) continue;
-    const o={}; hdr.forEach((h,j)=>{o[h.trim()]=(cols[j]||'').trim();}); rows.push(o);
+    const cols=splitL(lines[i],sep);
+    if(cols.length<2||cols.every(c=>!c.trim()))continue;
+    const o={};hdr.forEach((h,j)=>{o[h.trim()]=(cols[j]||'').trim();});rows.push(o);
   }
   processRows(rows);
 }
 function splitL(line,sep){
-  if(sep===','){
-    const r=[];let cur='',inQ=false;
-    for(const c of line){if(c==='"')inQ=!inQ;else if(c===sep&&!inQ){r.push(cur.replace(/"/g,''));cur='';}else cur+=c;}
-    r.push(cur.replace(/"/g,'')); return r;
-  }
+  if(sep===','){const r=[];let cur='',inQ=false;for(const c of line){if(c==='"')inQ=!inQ;else if(c===sep&&!inQ){r.push(cur.replace(/"/g,''));cur='';}else cur+=c;}r.push(cur.replace(/"/g,''));return r;}
   return line.split(sep).map(c=>c.replace(/"/g,'').trim());
 }
 function findKey(obj,names){
@@ -556,106 +713,169 @@ function findKey(obj,names){
   for(const n of names){const f=ks.find(k=>k.toLowerCase().includes(n.toLowerCase()));if(f)return f;}
   return null;
 }
-
 function processRows(rows){
-  if(!rows.length){ toast('No data in file','err'); return; }
+  if(!rows.length){toast('No data in file','err');return;}
   const s=rows[0];
   const kW=findKey(s,['waybill','awb','awb number','awb_number','waybillno']);
   const kC=findKey(s,['client','client name','clientname']);
   const kO=findKey(s,['order','order id','orderid','order_id','order no']);
   const kS=findKey(s,['currentstatus','current status','current_status','status']);
   const kR=findKey(s,['remark','remarks','remark1']);
-  if(!kW){ toast('AWB column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err'); return; }
-  if(!kS){ toast('Status column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err'); return; }
+  if(!kW){toast('AWB column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err');return;}
+  if(!kS){toast('Status column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err');return;}
 
-  allData = rows.map((r,i)=>({
-    id: i,
-    waybill: String(r[kW]||'').trim(),
-    client:  String(r[kC]||'').trim(),
-    order:   String(r[kO]||'').trim(),
-    status:  String(r[kS]||'').trim().toLowerCase(),
-    remark:  String(r[kR]||'').trim(),
-    isRej:   isRej(String(r[kR]||'')),
-    sel:     false,
-  })).filter(r=>r.waybill);
+  function normStatus(s){
+    const l=(s||'').trim().toLowerCase();
+    // RTO
+    if(l.includes('rto')) return 'rto';
+    // DTO / Delivered
+    if(l==='delivered'||l==='delivery done'||l==='dto'||l==='shipment delivered') return 'dto';
+    // Dispatched / Out for delivery
+    if(l==='dispatched'||l==='dispatch'||l==='out for delivery'||l.includes('transit')||l==='ofd') return 'dispatched';
+    // Pending — not attempted, barcode mismatch, office closed, etc.
+    // Keep original status raw value too for reference, but bucket = pending
+    return 'pending';
+  }
+  const parsed=rows.map((r,i)=>({
+    id:Date.now()+'_'+i,
+    waybill:String(r[kW]||'').trim(),
+    client:String(r[kC]||'').trim(),
+    order:String(r[kO]||'').trim(),
+    status:normStatus(r[kS]),
+    remark:String(r[kR]||'').trim(),
+    isRej:isRej(String(r[kR]||'')),
+    sel:false,
+  })).filter(r=>r.waybill&&r.waybill.length>3);
 
-  if(!allData.length){ toast('No valid rows found','err'); return; }
+  if(!parsed.length){toast('No valid rows found','err');return;}
 
-  currentFE = { name: document.getElementById('feName').value, dspId: document.getElementById('dspId').value };
+  sessions[activeKey].rows = parsed;
+  sessions[activeKey].date = document.getElementById('dateVal').value;
+  saveSessionsToStorage();
   statusFilter='all'; activeRemark=null;
-  document.getElementById('mainSection').style.display='block';
-  document.getElementById('rowBadge').textContent=allData.length+' rows';
-  document.getElementById('rowBadge').style.display='block';
-  setSteps(2);
-  refreshAll();
-  toast('✓ '+allData.length+' rows loaded','ok');
+  viewSession(activeKey);
+  toast('✓ '+parsed.length+' rows loaded & saved','ok');
 }
 
-/* ── STATUS FILTER ──────────────────────────────────────── */
-function setStatusFilter(s){
-  statusFilter=s; activeRemark=null;
-  // tab UI
-  ['all','pend','disp','rto','dto'].forEach(k=>{
-    const el=document.getElementById('tab'+k.charAt(0).toUpperCase()+k.slice(1));
-    if(el) el.classList.remove('active');
-  });
-  const tabMap={all:'tabAll',pending:'tabPend',dispatched:'tabDisp',rto:'tabRTO',dto:'tabDTO'};
-  const tabEl=document.getElementById(tabMap[s]);
-  if(tabEl) tabEl.classList.add('active');
+/* ══════════════════════════════════════
+   FILTER
+══════════════════════════════════════ */
+function getRows(){ return (sessions[activeKey]||{}).rows || []; }
+function setFilter(f){
+  statusFilter=f; activeRemark=null; searchQuery='';
+  const se=document.getElementById('tblSearch'); if(se) se.value='';
+  ['All','Pend','Disp','RTO','DTO'].forEach(k=>document.getElementById('tab'+k).classList.remove('active'));
+  const m={all:'tabAll',pending:'tabPend',dispatched:'tabDisp',rto:'tabRTO',dto:'tabDTO'};
+  document.getElementById(m[f]).classList.add('active');
+  focusedIdx=-1;
   refreshAll();
 }
+function isPending(s){ return s==='pending'||s==='not attempted'||s==='undelivered'||s==='failed delivery'||s==='out for delivery'||(!isDisp(s)&&!isRTO(s)&&!isDTO(s)); }
+function isDisp(s){ return s==='dispatched'||s==='dispatch'||s==='in transit'||s==='intransit'; }
+function isRTO(s){ return s==='rto'||s==='return'||s==='rto initiated'||s==='rto delivered'; }
+function isDTO(s){ return s==='dto'||s==='delivered'||s==='delivery done'; }
 
-/* ── REMARK CHIPS ───────────────────────────────────────── */
-function renderChips(){
-  const pendRows=allData.filter(r=>r.status==='pending');
-  const rs=document.getElementById('remarkSection');
-  if(statusFilter!=='pending' || !pendRows.length){ rs.style.display='none'; return; }
-
-  const counts={};
-  pendRows.forEach(r=>{const k=r.remark||'No Remark'; counts[k]=(counts[k]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-
-  document.getElementById('chipsGrid').innerHTML=sorted.map(([lbl,cnt])=>{
-    const rej=isRej(lbl), act=activeRemark===lbl;
-    return `<div class="chip ${rej?'rej':''} ${act?'active':''}"
-      onclick="clickChip('${esc(lbl).replace(/'/g,"&#39;")}')">
-      <span class="chip-label" title="${esc(lbl)}">${esc(lbl)||'No Remark'}</span>
-      <span class="chip-count">${cnt} pkt</span>
-    </div>`;
-  }).join('');
-
-  rs.style.display='block';
-  document.getElementById('remarkFilterLabel').textContent=
-    activeRemark ? 'Filtered: "'+activeRemark+'"' : 'Click a remark to filter';
-  document.getElementById('showAllChipBtn').style.display=activeRemark?'inline-flex':'none';
-}
-function clickChip(r){ activeRemark=activeRemark===r?null:r; refreshAll(); }
-function clearRemarkFilter(){ activeRemark=null; refreshAll(); }
-
-/* ── VISIBLE ROWS ───────────────────────────────────────── */
 function visibleRows(){
-  let rows=allData;
-  if(statusFilter!=='all') rows=rows.filter(r=>r.status===statusFilter);
+  let rows=getRows();
+  if(statusFilter==='pending') rows=rows.filter(r=>isPending(r.status));
+  else if(statusFilter==='dispatched') rows=rows.filter(r=>isDisp(r.status));
+  else if(statusFilter==='rto') rows=rows.filter(r=>isRTO(r.status));
+  else if(statusFilter==='dto') rows=rows.filter(r=>isDTO(r.status));
   if(statusFilter==='pending'&&activeRemark!==null) rows=rows.filter(r=>r.remark===activeRemark);
+  // Apply search query
+  if(searchQuery){
+    rows=rows.filter(r=>
+      r.waybill.toLowerCase().includes(searchQuery)||
+      (r.client||'').toLowerCase().includes(searchQuery)||
+      (r.order||'').toLowerCase().includes(searchQuery)
+    );
+  }
   return rows;
 }
 
-/* ── DSP KEY FROM AWB ───────────────────────────────────── */
-function dspFromAwb(awb){
-  const m=awb.match(/^([A-Za-z]+)/); return m?m[1].toUpperCase():awb.substring(0,4).toUpperCase();
+/* ══════════════════════════════════════
+   REFRESH
+══════════════════════════════════════ */
+function refreshAll(){
+  const rows=getRows();
+  const pend=rows.filter(r=>isPending(r.status)).length;
+  const disp=rows.filter(r=>isDisp(r.status)).length;
+  const rto=rows.filter(r=>isRTO(r.status)).length;
+  const dto=rows.filter(r=>isDTO(r.status)).length;
+  document.getElementById('cntAll').textContent=rows.length;
+  document.getElementById('cntPend').textContent=pend;
+  document.getElementById('cntDisp').textContent=disp;
+  document.getElementById('cntRTO').textContent=rto;
+  document.getElementById('cntDTO').textContent=dto;
+  document.getElementById('rowBadge').textContent=rows.length+' rows';
+  renderChips();
+  renderTable();
+  renderFEGrid();
+  updateSelUI();
 }
 
-/* ── RENDER TABLE ───────────────────────────────────────── */
+/* ══════════════════════════════════════
+   CHIPS
+══════════════════════════════════════ */
+function renderChips(){
+  const rc=document.getElementById('remarkCard');
+  if(statusFilter!=='pending'){rc.style.display='none';return;}
+  const pend=getRows().filter(r=>isPending(r.status));
+  if(!pend.length){rc.style.display='none';return;}
+  const counts={};
+  pend.forEach(r=>{const k=r.remark||'No Remark';counts[k]=(counts[k]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('chipsWrap').innerHTML=sorted.map(([lbl,cnt])=>{
+    const rej=isRej(lbl),act=activeRemark===lbl;
+    const safe=lbl.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="chip${rej?' rej':''}${act?' active':''}" onclick="clickChip('${safe}')">
+      <span class="chip-lbl" title="${esc(lbl)}">${esc(lbl)||'No Remark'}</span>
+      <span class="chip-cnt">${cnt} pkt</span>
+    </div>`;
+  }).join('');
+  rc.style.display='block';
+  document.getElementById('rcSub').textContent=activeRemark?`Showing: "${activeRemark}"`:' Click any remark chip to filter';
+  document.getElementById('rcBack').style.display=activeRemark?'inline-flex':'none';
+}
+function clickChip(r){activeRemark=activeRemark===r?null:r;refreshAll();}
+function clearRemarkFilter(){activeRemark=null;refreshAll();}
+function onSearch(){
+  searchQuery=(document.getElementById('tblSearch')||{value:''}).value.trim().toLowerCase();
+  renderTable();
+}
+
+/* ══════════════════════════════════════
+   TABLE
+══════════════════════════════════════ */
+function _buildRow(r, dsp, fe, globalIdx){
+  const dspCell = globalIdx===0
+    ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-weight:600">${esc(dsp)}</span>`
+    : '';
+  return `<tr class="${r.isRej?'rej-row':''} ${r.sel?'sel-row':''}" data-id="${r.id}">
+    <td class="tc"><input type="checkbox" ${r.sel?'checked':''} onchange="toggleRow('${r.id}',this)"></td>
+    <td class="tc"><button class="del-btn" onclick="deleteRow('${r.id}')" title="Delete">&#10005;</button></td>
+    <td>${dspCell}</td>
+    <td><span class="awb-cell">${esc(r.waybill)}</span></td>
+    <td style="font-size:12px;color:var(--text2)">${esc(r.client)}</td>
+    <td style="font-size:11.5px;color:var(--text2)">${esc(r.order)}</td>
+    <td style="font-size:11.5px;color:var(--text2)">${esc(r.remark)||'&#8212;'}</td>
+    <td style="font-size:11.5px;color:var(--text2)">${esc(fe)}</td>
+  </tr>`;
+}
+
 function renderTable(){
   const data=visibleRows();
-  const fe=document.getElementById('feName').value||'—';
-  const dspInput=document.getElementById('dspId').value.trim();
-  const date=document.getElementById('dateVal').value||'—';
+  const fe=sessions[activeKey]?.fe||'—';
+  const dsp=sessions[activeKey]?.dsp||'—';
+  const date=sessions[activeKey]?.date||'—';
 
-  // Label
-  const labels={all:'All Shipments',pending:'Pending Shipments',dispatched:'Dispatched Shipments',rto:'RTO Shipments',dto:'DTO / Delivered'};
-  document.getElementById('tblLabel').textContent=activeRemark?'Pending — '+activeRemark:(labels[statusFilter]||'Shipments');
-  document.getElementById('tblCount').textContent=data.length+' rows';
+  const lbls={all:'All Shipments',pending:'Pending Shipments',dispatched:'Dispatched',rto:'RTO Shipments',dto:'DTO / Delivered'};
+  document.getElementById('tblLbl').textContent=activeRemark?`Pending — ${activeRemark}`:(lbls[statusFilter]||'Shipments');
+  document.getElementById('tblCnt').textContent=data.length+' rows';
+
+  const intact=getRows().filter(r=>isPending(r.status)&&r.isRej);
+  document.getElementById('intactCnt').textContent=intact.length;
+  document.getElementById('intactBadge').style.display=intact.length?'inline-flex':'none';
 
   if(!data.length){
     document.getElementById('tblCard').style.display='none';
@@ -665,373 +885,284 @@ function renderTable(){
   document.getElementById('tblCard').style.display='block';
   document.getElementById('emptyState').style.display='none';
 
-  // NO grouping — flat list. DSP only on very first data row, rest blank.
-  let html='';
-  // Single DSP header banner if DSP ID is entered
-  if(dspInput){
-    html+=`<tr class="dsp-hdr">
-      <td colspan="9">
-        <div class="dsp-grp-inner">
-          <span style="font-size:9.5px;color:#6A8CAA;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-right:2px">DSP</span>
-          <span class="dsp-grp-name">${esc(dspInput)}</span>
-          <span class="dsp-grp-count">${data.length} pkt</span>
-          <span class="dsp-grp-fe">${esc(fe)}</span>
-        </div>
-      </td>
-    </tr>`;
-  }
-  data.forEach((r,idx)=>{
-    const rejClass=r.isRej?'rej-row':'';
-    const selClass=r.sel?'sel-row':'';
-    // DSP ID only on FIRST row overall, rest all blank
-    const dspCell=idx===0 ? esc(dspInput||'') : '';
-    const remarkHtml=r.remark
-      ?`<span class="remark-pill ${r.isRej?'rej':''}">${esc(r.remark)}</span>`
-      :`<span style="color:var(--text3);font-size:11px">—</span>`;
-    html+=`<tr class="${rejClass} ${selClass}" data-id="${r.id}">
-      <td class="tc"><input type="checkbox" ${r.sel?'checked':''} onchange="toggleRow(${r.id},this)"></td>
-      <td class="tc"><button class="del-btn" onclick="deleteRow(${r.id})" title="Delete row">✕</button></td>
-      <td style="color:var(--text2)">${esc(date)}</td>
-      <td style="color:var(--text3);font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:600">${dspCell}</td>
-      <td><span class="awb-cell">${esc(r.waybill)}</span></td>
-      <td class="client-cell">${esc(r.client)}</td>
-      <td style="font-size:11.5px;color:var(--text2)">${esc(r.order)}</td>
-      <td>${remarkHtml}</td>
-      <td style="font-size:11.5px;color:var(--text2)">${esc(fe)}</td>
-    </tr>`;
-  });
+  // DSP header banner
+  let html=`<tr class="dsp-row"><td colspan="8"><div class="dsp-inner">
+    <span class="dsp-name">${esc(dsp)}</span>
+    <span class="dsp-cnt">${data.length} pkt</span>
+    <span class="dsp-fe">${esc(fe)} &nbsp;·&nbsp; ${date}</span>
+  </div></td></tr>`;
 
+  if(statusFilter==='pending' && activeRemark===null){
+    // PENDING: group by remark — normal remarks first (desc count), reject remarks last
+    const remarkGroups={};
+    data.forEach(r=>{
+      const k=r.remark||'No Remark';
+      if(!remarkGroups[k]) remarkGroups[k]=[];
+      remarkGroups[k].push(r);
+    });
+    const sortedGroups=Object.entries(remarkGroups).sort((a,b)=>{
+      const ar=isRej(a[0]),br=isRej(b[0]);
+      if(ar&&!br) return 1; if(!ar&&br) return -1;
+      return b[1].length-a[1].length;
+    });
+    let globalIdx=0;
+    sortedGroups.forEach(([remarkKey,rows])=>{
+      const rejGrp=isRej(remarkKey);
+      html+=`<tr style="background:${rejGrp?'#FEF2F2':'#EFF6FF'}">
+        <td colspan="8" style="padding:6px 14px;font-size:10.5px;font-weight:700;
+          color:${rejGrp?'#B91C1C':'#1D4ED8'};letter-spacing:.4px;text-transform:uppercase;
+          border-top:2px solid ${rejGrp?'#FECACA':'#BFDBFE'};border-bottom:1px solid ${rejGrp?'#FECACA':'#BFDBFE'}">
+          ${rejGrp?'⚠ ':'📌 '}${esc(remarkKey)}
+          <span style="background:${rejGrp?'#FCA5A5':'#BFDBFE'};color:${rejGrp?'#7F1D1D':'#1E3A8A'};
+            border-radius:8px;padding:1px 9px;font-size:10px;margin-left:8px;font-weight:800">${rows.length} pkt</span>
+        </td>
+      </tr>`;
+      rows.forEach(r=>{ html+=_buildRow(r,dsp,fe,globalIdx); globalIdx++; });
+    });
+  } else {
+    // ALL / DISPATCHED / RTO / DTO — flat list, no remark grouping
+    data.forEach((r,idx)=>{ html+=_buildRow(r,dsp,fe,idx); });
+  }
+
+  // Fast render: use innerHTML (browsers handle up to ~2000 rows fine with this)
+  // For very large datasets the search box above limits visible rows
   document.getElementById('mainBody').innerHTML=html;
   document.getElementById('selAll').checked=data.length>0&&data.every(r=>r.sel);
 }
 
-/* ── ACTION BAR ─────────────────────────────────────────── */
-function renderActionBar(){
-  const data=visibleRows();
-  const selN=allData.filter(r=>r.sel).length;
-  const isPending=statusFilter==='pending';
-
-  let left='', right='';
-
-  if(isPending){
-    left+=`<button class="btn btn-green" onclick="downloadExcel()">⬇ Download Excel</button>`;
-    left+=`<button class="btn btn-primary" onclick="copyTable()">📋 Copy Table</button>`;
-    left+=`<button class="btn btn-amber" onclick="saveFEToSession()">💾 Save FE & Add Next</button>`;
-  } else {
-    left+=`<button class="btn btn-green" onclick="downloadExcel()">⬇ Download Excel</button>`;
-    left+=`<button class="btn btn-primary" onclick="copyTable()">📋 Copy Table</button>`;
-    left+=`<button class="btn btn-amber" onclick="saveFEToSession()">💾 Save FE & Add Next</button>`;
-  }
-
-  if(selN>0){
-    left+=`<button class="btn btn-danger" onclick="deleteSelected()">🗑 Delete Selected (${selN})</button>`;
-  }
-
-  document.getElementById('abLeft').innerHTML=left;
-  document.getElementById('abRight').innerHTML=right;
-}
-
-/* ── REFRESH ALL ─────────────────────────────────────────── */
-function refreshAll(){
-  updateCounts();
-  renderChips();
-  renderTable();
-  renderActionBar();
-  updateSelUI();
-}
-
-/* ── COUNTS ─────────────────────────────────────────────── */
-function updateCounts(){
-  const total=allData.length;
-  const pend=allData.filter(r=>r.status==='pending').length;
-  const disp=allData.filter(r=>r.status==='dispatched'||r.status==='dispatch').length;
-  const rto=allData.filter(r=>r.status==='rto').length;
-  const dto=allData.filter(r=>r.status==='dto'||r.status==='delivered').length;
-  document.getElementById('cntAll').textContent=total;
-  document.getElementById('cntPend').textContent=pend;
-  document.getElementById('cntDisp').textContent=disp;
-  document.getElementById('cntRTO').textContent=rto;
-  document.getElementById('cntDTO').textContent=dto;
-  document.getElementById('rowBadge').textContent=total+' rows';
-}
-
-/* ── SELECTION ───────────────────────────────────────────── */
+/* ══════════════════════════════════════
+   SELECTION & DELETE
+══════════════════════════════════════ */
 function toggleRow(id,cb){
-  const r=allData.find(x=>x.id===id); if(r) r.sel=cb.checked;
-  const tr=document.querySelector('tr[data-id="'+id+'"]');
-  if(tr) tr.classList.toggle('sel-row',cb.checked);
+  const r=getRows().find(x=>x.id===id);if(r)r.sel=cb.checked;
+  const tr=document.querySelector(`tr[data-id="${id}"]`);if(tr)tr.classList.toggle('sel-row',cb.checked);
   updateSelUI();
-  renderActionBar();
 }
-function toggleSelAll(cb){
-  visibleRows().forEach(r=>r.sel=cb.checked);
-  renderTable(); updateSelUI(); renderActionBar();
-}
+function toggleSelAll(cb){visibleRows().forEach(r=>r.sel=cb.checked);renderTable();updateSelUI();}
 function updateSelUI(){
-  document.getElementById('selAll').checked=visibleRows().length>0&&visibleRows().every(r=>r.sel);
+  const n=getRows().filter(r=>r.sel).length;
+  document.getElementById('selCnt').textContent=n;
+  document.getElementById('selBtnWrap').style.display=n?'inline-block':'none';
 }
-
-/* ── DELETE ──────────────────────────────────────────────── */
 function deleteRow(id){
-  allData=allData.filter(r=>r.id!==id);
+  if(!activeKey)return;
+  sessions[activeKey].rows=sessions[activeKey].rows.filter(r=>r.id!==id);
+  saveSessionsToStorage();
   refreshAll();
   toast('Row deleted','info');
 }
 function deleteSelected(){
-  const n=allData.filter(r=>r.sel).length;
-  if(!n) return;
-  allData=allData.filter(r=>!r.sel);
+  if(!activeKey)return;
+  const n=sessions[activeKey].rows.filter(r=>r.sel).length;
+  if(!n)return;
+  sessions[activeKey].rows=sessions[activeKey].rows.filter(r=>!r.sel);
+  saveSessionsToStorage();
   refreshAll();
   toast(n+' rows deleted','info');
 }
 
-/* ── BUILD EXPORT ROWS (no serial, DSP only on first row per group) ── */
-function buildExportRows(data){
-  const fe=document.getElementById('feName').value||'';
-  const dspInput=document.getElementById('dspId').value.trim();
-  const date=document.getElementById('dateVal').value||'';
-
-  // Flat list — DSP entered by user shows only on first data row, rest blank
-  const header=['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name'];
-  const out=[header];
-  data.forEach((r,idx)=>{
-    out.push([date, idx===0?(dspInput||''):'', r.waybill, r.client, r.order, r.remark, fe]);
-  });
-  return out;
+/* ══════════════════════════════════════
+   INTACT MODAL
+══════════════════════════════════════ */
+function openIntactModal(){
+  const data=getRows().filter(r=>r.status==='pending'&&r.isRej);
+  if(!data.length){toast('No intact shipments','err');return;}
+  document.getElementById('mIntactCnt').textContent=data.length+' pkts';
+  document.getElementById('mIntactList').innerHTML=data.map(r=>`
+    <div class="m-awb-item" data-id="${r.id}">
+      <span class="awb-v">${esc(r.waybill)}</span>
+      <span class="awb-r">${esc(r.remark)}</span>
+      <button class="del-btn" onclick="deleteIntactRow('${r.id}')" title="Delete">✕</button>
+    </div>`).join('');
+  document.getElementById('intactModal').classList.add('open');
+}
+function closeIntactModal(){document.getElementById('intactModal').classList.remove('open');}
+function deleteIntactRow(id){
+  sessions[activeKey].rows=sessions[activeKey].rows.filter(r=>r.id!==id);
+  saveSessionsToStorage();
+  const el=document.querySelector(`.m-awb-item[data-id="${id}"]`);if(el)el.remove();
+  const rem=getRows().filter(r=>r.status==='pending'&&r.isRej);
+  document.getElementById('mIntactCnt').textContent=rem.length+' pkts';
+  if(!rem.length)closeIntactModal();
+  refreshAll();
+  toast('Row deleted','info');
+}
+function downloadIntact(){
+  const data=getRows().filter(r=>r.status==='pending'&&r.isRej);
+  if(!data.length){toast('No intact data','err');return;}
+  xlsxDownload(data,'Reject But Intact','Intact_');
+}
+function copyIntact(){
+  const data=getRows().filter(r=>r.status==='pending'&&r.isRej);
+  if(!data.length){toast('No intact data','err');return;}
+  doClipboard(data.map(r=>r.waybill).join('\n'),'AWB numbers copied');
 }
 
-/* ── DOWNLOAD EXCEL ─────────────────────────────────────── */
-function downloadExcel(){
-  const data=visibleRows();
-  if(!data.length){ toast('No data to download','err'); return; }
-  const dspInput=document.getElementById('dspId').value||'DSP';
-  const date=document.getElementById('dateVal').value||'today';
-
-  const wb=XLSX.utils.book_new();
-  const rows=buildExportRows(data);
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-
-  // Col widths
+/* ══════════════════════════════════════
+   EXPORT
+══════════════════════════════════════ */
+function buildRows(data, includeHeader=true){
+  const s=sessions[activeKey]||{};
+  const fe=s.fe||''; const dsp=s.dsp||''; const date=s.date||'';
+  const out=[];
+  if(includeHeader) out.push(['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']);
+  // DSP only on first data row
+  data.forEach((r,idx)=>out.push([date, idx===0?dsp:'', r.waybill, r.client, r.order, r.remark, fe]));
+  return out;
+}
+function applyStyle(ws,rows){
   ws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
-
-  // Center-align all + style header
   const range=XLSX.utils.decode_range(ws['!ref']);
   for(let R=range.s.r;R<=range.e.r;R++){
     for(let C=range.s.c;C<=range.e.c;C++){
       const addr=XLSX.utils.encode_cell({r:R,c:C});
-      if(!ws[addr]) ws[addr]={t:'z',v:''};
-      if(!ws[addr].s) ws[addr].s={};
+      if(!ws[addr])ws[addr]={t:'z',v:''};
+      if(!ws[addr].s)ws[addr].s={};
       ws[addr].s.alignment={horizontal:'center',vertical:'center',wrapText:true};
       if(R===0){
-        ws[addr].s.fill={patternType:'solid',fgColor:{rgb:'16304F'}};
+        ws[addr].s.fill={patternType:'solid',fgColor:{rgb:'1F2937'}};
         ws[addr].s.font={bold:true,color:{rgb:'FFFFFF'},sz:11};
       }
     }
   }
-
-  const suf=activeRemark?'_'+activeRemark.replace(/[^a-zA-Z0-9]/g,'_')
-           :statusFilter!=='all'?'_'+statusFilter.toUpperCase()
-           :'_AllData';
-  XLSX.utils.book_append_sheet(wb,ws,'POD Data');
-  XLSX.writeFile(wb,'POD_'+dspInput+'_'+date+suf+'.xlsx');
+}
+function xlsxDownload(data,sheetName,prefix){
+  const s=sessions[activeKey]||{};
+  const wb=XLSX.utils.book_new();
+  const rows=buildRows(data);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  applyStyle(ws,rows);
+  XLSX.utils.book_append_sheet(wb,ws,sheetName);
+  const suf=activeRemark?'_'+activeRemark.replace(/[^a-zA-Z0-9]/g,'_'):statusFilter!=='all'?'_'+statusFilter.toUpperCase():'';
+  XLSX.writeFile(wb,prefix+(s.dsp||'')+'_'+(s.date||'today')+suf+'.xlsx');
   toast('✓ Downloaded — '+data.length+' rows','ok');
-  setSteps(3);
+}
+function downloadExcel(){
+  const data=visibleRows(); if(!data.length){toast('No data','err');return;}
+  xlsxDownload(data,'POD Data','POD_');
+}
+function copyTable(){
+  const data=visibleRows(); if(!data.length){toast('No data','err');return;}
+  const s=sessions[activeKey]||{};
+  const dsp=s.dsp||''; const fe=s.fe||''; const date=s.date||'';
+
+  let orderedData=data;
+  if(statusFilter==='pending'&&activeRemark===null){
+    const groups={};
+    data.forEach(r=>{const k=r.remark||'No Remark';if(!groups[k])groups[k]=[];groups[k].push(r);});
+    const sorted=Object.entries(groups).sort((a,b)=>{
+      const ar=isRej(a[0]),br=isRej(b[0]);
+      if(ar&&!br)return 1;if(!ar&&br)return -1;
+      return b[1].length-a[1].length;
+    });
+    orderedData=sorted.flatMap(([,rows])=>rows);
+  }
+
+  const cellSt='border:1px solid #CBD5E1;padding:5px 8px;text-align:center;vertical-align:middle;font-size:11pt;font-family:Calibri,Arial,sans-serif;';
+  let htm='<table style="border-collapse:collapse">';
+  orderedData.forEach(function(r,idx){
+    const vals=[date,idx===0?dsp:'',r.waybill,r.client,r.order,r.remark||'',fe];
+    htm+='<tr>'+vals.map(function(v){return '<td style="'+cellSt+'">'+v+'</td>';}).join('')+'</tr>';
+  });
+  htm+='</table>';
+
+  const TAB='\t'; const NL='\n';
+  const lines=orderedData.map(function(r,idx){
+    return [date,idx===0?dsp:'',r.waybill,r.client,r.order,r.remark||'',fe].join(TAB);
+  });
+  const plain=lines.join(NL);
+
+  // Try HTML clipboard first (gives auto-center in Excel desktop)
+  // Fall back to plain text (always works on Android)
+  function tryHtml(){
+    if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+      return navigator.clipboard.write([new ClipboardItem({
+        'text/html':new Blob([htm],{type:'text/html'}),
+        'text/plain':new Blob([plain],{type:'text/plain'}),
+      })]).then(function(){toast('Copied! Paste in Excel — auto centered','ok');})
+         .catch(function(){_fbCopy(plain);});
+    }
+    return Promise.reject();
+  }
+  tryHtml().catch(function(){_fbCopy(plain);});
 }
 
-/* ── COPY TABLE ─────────────────────────────────────────── */
-function copyTable(){
-  const data=visibleRows();
-  if(!data.length){ toast('No data to copy','err'); return; }
-  const fe=document.getElementById('feName').value||'';
-  const dspInput=document.getElementById('dspId').value.trim();
-  const date=document.getElementById('dateVal').value||'';
-
-  // Flat list — DSP only on first row
-  let txt='Date\tDSP ID\tAWB Number\tClient\tOrder ID\tRemark\tFE Name\n';
-  data.forEach((r,idx)=>{
-    txt+=`${date}\t${idx===0?(dspInput||''):''}\t${r.waybill}\t${r.client}\t${r.order}\t${r.remark}\t${fe}\n`;
-  });
-
-  function doFallback(){
+function _fbCopy(txt){
+  // Make textarea just big enough for Android to allow selection
+  const ta=document.createElement('textarea');
+  ta.value=txt;
+  ta.style.cssText='position:fixed;top:10px;left:10px;width:200px;height:60px;opacity:.01;z-index:9999;font-size:12px;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0,ta.value.length);
+  let ok=false;
+  try{ ok=document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  if(ok){
+    toast('Copied! Paste in Excel with Ctrl+V','ok');
+  } else if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt)
+      .then(()=>toast('Copied! Paste in Excel with Ctrl+V','ok'))
+      .catch(()=>toast('Copy failed — use Download Excel','err'));
+  } else {
+    toast('Copy not supported — use Download Excel','err');
+  }
+}
+function doClipboard(txt,msg){
+  function fb(){
     const ta=document.createElement('textarea');
-    ta.value=txt;
-    ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select(); ta.setSelectionRange(0,999999);
-    try{
-      const ok=document.execCommand('copy');
-      toast(ok?'✓ Copied! Paste with Ctrl+V':'Copy failed — use Download','ok');
-    }catch(e){ toast('Copy not supported — use Download Excel','err'); }
+    ta.value=txt;ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,999999);
+    try{const ok=document.execCommand('copy');toast(ok?msg:'Use Download instead','ok');}
+    catch(e){toast('Copy failed — use Download','err');}
     document.body.removeChild(ta);
   }
-
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt)
-      .then(()=>toast('✓ Copied! Paste with Ctrl+V','ok'))
-      .catch(()=>doFallback());
-  } else { doFallback(); }
+    navigator.clipboard.writeText(txt).then(()=>toast(msg,'ok')).catch(()=>fb());
+  } else fb();
 }
 
-/* ── STEPS ───────────────────────────────────────────────── */
-function setSteps(active){ /* removed */ }
-
-/* ── CLEAR ALL ───────────────────────────────────────────── */
-function clearAll(){
-  allData=[]; statusFilter='all'; activeRemark=null;
-  document.getElementById('mainSection').style.display='none';
-  document.getElementById('rowBadge').style.display='none';
-  document.getElementById('fileInput').value='';
-  ['cntAll','cntPend','cntDisp','cntRTO','cntDTO'].forEach(id=>document.getElementById(id).textContent='0');
-  setSteps(1);
-  toast('Cleared — ready for new upload','info');
+/* ══════════════════════════════════════
+   KEYBOARD NAV
+══════════════════════════════════════ */
+let focusedIdx=-1;
+const TABS=['all','pending','dispatched','rto','dto'];
+function getFocRows(){return Array.from(document.querySelectorAll('#mainBody tr[data-id]'));}
+function hRow(idx){
+  const rows=getFocRows();rows.forEach(r=>r.classList.remove('kb-focus'));
+  if(idx>=0&&idx<rows.length){rows[idx].classList.add('kb-focus');rows[idx].scrollIntoView({block:'nearest',behavior:'smooth'});focusedIdx=idx;}
+  else focusedIdx=-1;
 }
-
-
-/* ── ARROW KEY NAVIGATION ───────────────────────────────── */
-let focusedRowIdx = -1;
-const TABS = ['all','pending','dispatched','rto','dto'];
-
-function getFocusableRows() {
-  return Array.from(document.querySelectorAll('#mainBody tr[data-id]'));
-}
-
-function highlightRow(idx) {
-  const rows = getFocusableRows();
-  rows.forEach(r => r.classList.remove('kb-focus'));
-  if (idx >= 0 && idx < rows.length) {
-    rows[idx].classList.add('kb-focus');
-    rows[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    focusedRowIdx = idx;
-  } else {
-    focusedRowIdx = -1;
-  }
-}
-
-document.addEventListener('keydown', function(e) {
-  const tag = e.target.tagName;
-  const inInput = ['INPUT','TEXTAREA','SELECT'].includes(tag);
-
-  // Tab key — cycle through input fields only
-  if (e.key === 'Tab' && !e.shiftKey && !inInput) {
-    e.preventDefault();
-    document.getElementById('feName').focus();
+document.addEventListener('keydown',function(e){
+  const inInp=['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName);
+  const ctrl=e.ctrlKey||e.metaKey;
+  if(inInp){if(e.key==='Escape')e.target.blur();return;}
+  if(ctrl){
+    if(e.key.toLowerCase()==='u'){e.preventDefault();document.getElementById('fileInput').click();}
+    if(e.key.toLowerCase()==='d'){e.preventDefault();downloadExcel();}
+    if(e.key.toLowerCase()==='c'&&activeKey){e.preventDefault();copyTable();}
     return;
   }
-
-  if (inInput) {
-    // Tab inside inputs — feName → dspId → dateVal → back to page
-    if (e.key === 'Tab') {
-      const fields = ['feName','dspId','dateVal'];
-      const curIdx = fields.indexOf(e.target.id);
-      if (curIdx !== -1) {
+  switch(e.key){
+    case 'ArrowLeft':{e.preventDefault();const c=TABS.indexOf(statusFilter);setFilter(TABS[(c-1+TABS.length)%TABS.length]);break;}
+    case 'ArrowRight':{e.preventDefault();const c=TABS.indexOf(statusFilter);setFilter(TABS[(c+1)%TABS.length]);break;}
+    case 'ArrowUp':{e.preventDefault();const r=getFocRows();if(!r.length)break;hRow(focusedIdx<=0?r.length-1:focusedIdx-1);break;}
+    case 'ArrowDown':{e.preventDefault();const r=getFocRows();if(!r.length)break;hRow(focusedIdx>=r.length-1?0:focusedIdx+1);break;}
+    case 'Enter':{e.preventDefault();const r=getFocRows();if(focusedIdx>=0&&focusedIdx<r.length){const cb=r[focusedIdx].querySelector('input[type="checkbox"]');if(cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event('change'));}}break;}
+    case 'Delete':case 'Backspace':{
+      const r=getFocRows();
+      if(focusedIdx>=0&&focusedIdx<r.length){
         e.preventDefault();
-        if (e.shiftKey) {
-          const prev = fields[curIdx - 1];
-          if (prev) document.getElementById(prev).focus();
-          else e.target.blur();
-        } else {
-          const next = fields[curIdx + 1];
-          if (next) document.getElementById(next).focus();
-          else { e.target.blur(); document.getElementById('uploadZone').focus(); }
-        }
-      }
-    }
-    if (e.key === 'Escape') e.target.blur();
-    return;
-  }
-
-  const ctrl = e.ctrlKey || e.metaKey;
-
-  switch(e.key) {
-    // ← → : switch status tabs
-    case 'ArrowLeft': {
-      e.preventDefault();
-      const cur = TABS.indexOf(statusFilter);
-      const prev = (cur - 1 + TABS.length) % TABS.length;
-      setStatusFilter(TABS[prev]);
-      focusedRowIdx = -1;
-      break;
-    }
-    case 'ArrowRight': {
-      e.preventDefault();
-      const cur = TABS.indexOf(statusFilter);
-      const next = (cur + 1) % TABS.length;
-      setStatusFilter(TABS[next]);
-      focusedRowIdx = -1;
-      break;
-    }
-
-    // ↑ ↓ : navigate rows
-    case 'ArrowUp': {
-      e.preventDefault();
-      const rows = getFocusableRows();
-      if (!rows.length) break;
-      const newIdx = focusedRowIdx <= 0 ? rows.length - 1 : focusedRowIdx - 1;
-      highlightRow(newIdx);
-      break;
-    }
-    case 'ArrowDown': {
-      e.preventDefault();
-      const rows = getFocusableRows();
-      if (!rows.length) break;
-      const newIdx = focusedRowIdx >= rows.length - 1 ? 0 : focusedRowIdx + 1;
-      highlightRow(newIdx);
-      break;
-    }
-
-    // Enter : toggle checkbox of focused row
-    case 'Enter': {
-      e.preventDefault();
-      const rows = getFocusableRows();
-      if (focusedRowIdx >= 0 && focusedRowIdx < rows.length) {
-        const cb = rows[focusedRowIdx].querySelector('input[type="checkbox"]');
-        if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+        deleteRow(r[focusedIdx].getAttribute('data-id'));
+        const nl=getFocRows().length;
+        hRow(Math.min(focusedIdx,nl-1));
       }
       break;
     }
-
-    // Delete/Backspace : delete focused row
-    case 'Delete':
-    case 'Backspace': {
-      const rows = getFocusableRows();
-      if (focusedRowIdx >= 0 && focusedRowIdx < rows.length) {
-        e.preventDefault();
-        const id = parseInt(rows[focusedRowIdx].getAttribute('data-id'));
-        deleteRow(id);
-        const newLen = getFocusableRows().length;
-        highlightRow(Math.min(focusedRowIdx, newLen - 1));
-      }
-      break;
-    }
-
-    // Escape : clear row focus
-    case 'Escape':
-      focusedRowIdx = -1;
-      getFocusableRows().forEach(r => r.classList.remove('kb-focus'));
-      break;
-
-    // Ctrl shortcuts
-    default:
-      if (!ctrl) break;
-      switch(e.key.toLowerCase()) {
-        case 'u': e.preventDefault(); document.getElementById('fileInput').click(); break;
-        case 'd': e.preventDefault(); allData.length ? downloadExcel() : (session.length ? downloadAllFE() : toast('Pehle file upload karo','err')); break;
-        case 's': e.preventDefault(); allData.length ? saveFEToSession() : toast('Pehle file upload karo','err'); break;
-        case 'n': e.preventDefault(); addNewFE(); break;
-        case 'c': if(e.shiftKey){ e.preventDefault(); allData.length ? copyTable() : toast('Pehle file upload karo','err'); } break;
-        case '1': e.preventDefault(); allData.length && setStatusFilter('all'); break;
-        case '2': e.preventDefault(); allData.length && setStatusFilter('pending'); break;
-        case '3': e.preventDefault(); allData.length && setStatusFilter('dispatched'); break;
-        case '4': e.preventDefault(); allData.length && setStatusFilter('rto'); break;
-        case '5': e.preventDefault(); allData.length && setStatusFilter('dto'); break;
-      }
+    case 'Escape':focusedIdx=-1;getFocRows().forEach(r=>r.classList.remove('kb-focus'));break;
   }
 });
-
-// Reset focus when table re-renders
-const _origRefreshAll = refreshAll;
-
-
 </script>
 </body>
 </html>
