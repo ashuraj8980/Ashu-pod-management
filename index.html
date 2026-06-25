@@ -281,6 +281,7 @@ td.tc{text-align:center}
       </div>
     </div>
 
+    <div id="uploadZoneWrap" style="display:none">
     <div class="upload-zone" id="uploadZone" tabindex="0"
       onclick="triggerFileInput()"
       onkeydown="if(event.key==='Enter')document.getElementById('fileInput').click()"
@@ -297,6 +298,7 @@ td.tc{text-align:center}
       </div>
     </div>
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.tsv,.ods,.xlsm" onchange="loadFile(this.files[0])">
+    </div><!-- /uploadZoneWrap -->
   </div>
 </div>
 
@@ -531,8 +533,14 @@ function saveSessionsToStorage(){
 ══════════════════════════════════════ */
 let _autoSaveTimer=null;
 function autoSaveDebounce(){
-  // Do nothing on typing — session card only created after file upload
   clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(checkSetupReady, 300);
+}
+function checkSetupReady(){
+  const fe=document.getElementById('feName').value.trim();
+  const dsp=document.getElementById('dspId').value.trim();
+  const wrap=document.getElementById('uploadZoneWrap');
+  if(wrap) wrap.style.display=(fe&&dsp)?'block':'none';
 }
 
 function saveSession(silent=false){
@@ -562,6 +570,7 @@ function viewSession(key){
   activeRemark = null;
   searchQuery = '';
   const se=document.getElementById('tblSearch'); if(se) se.value='';
+  const uw=document.getElementById('uploadZoneWrap'); if(uw) uw.style.display='block';
   const s = sessions[key];
   document.getElementById('feName').value = s.fe;
   document.getElementById('dspId').value  = s.dsp;
@@ -671,16 +680,25 @@ function handleDrop(e){
 }
 function loadFile(file){
   if(!file) return;
-  // auto-save session if not exists
   const fe  = document.getElementById('feName').value.trim();
   const dsp = document.getElementById('dspId').value.trim();
   if(!fe||!dsp){ toast('Fill FE Name and DSP ID first','err'); return; }
   const key = makeKey(fe, dsp);
+  // Always create fresh session OR replace existing rows completely
   if(!sessions[key]){
     sessions[key] = { fe, dsp, date:document.getElementById('dateVal').value, rows:[] };
+  } else {
+    // Clear old rows — new file = fresh data
+    sessions[key].rows = [];
+    sessions[key].date = document.getElementById('dateVal').value;
   }
   activeKey = key;
+  _pendingFile = file;
+  doReadFile(file);
+}
 
+let _pendingFile = null;
+function doReadFile(file){
   const name=file.name.toLowerCase(), rd=new FileReader();
   if(name.endsWith('.csv')||name.endsWith('.tsv')){
     rd.onload=e=>{const sep=name.endsWith('.tsv')?'\t':detectSep(e.target.result);parseDelim(e.target.result,sep);};
@@ -698,7 +716,10 @@ function detectSep(txt){
 function parseXL(buf){
   try{
     const wb=XLSX.read(buf,{type:'array',cellText:true,cellDates:true});
-    processRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false}));
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+    console.log('XL rows parsed:',rows.length, 'Sheet:',wb.SheetNames[0]);
+    processRows(rows);
   }catch(e){toast('File error: '+e.message,'err');}
 }
 function parseDelim(txt,sep){
@@ -734,14 +755,28 @@ function processRows(rows){
 
   function normStatus(s){
     const l=(s||'').trim().toLowerCase();
-    // RTO
-    if(l.includes('rto')) return 'rto';
-    // DTO / Delivered
-    if(l==='delivered'||l==='delivery done'||l==='dto'||l==='shipment delivered') return 'dto';
-    // Dispatched / Out for delivery
-    if(l==='dispatched'||l==='dispatch'||l==='out for delivery'||l.includes('transit')||l==='ofd') return 'dispatched';
-    // Pending — not attempted, barcode mismatch, office closed, etc.
-    // Keep original status raw value too for reference, but bucket = pending
+    if(!l) return 'pending';
+
+    // Exact Delhivery status values (case-insensitive)
+    if(l==='dto') return 'dto';
+    if(l==='rto') return 'rto';
+    if(l==='dispatched'||l==='dispatch') return 'dispatched';
+    if(l==='pending') return 'pending';
+
+    // Extended matches for other possible values
+    if(l==='delivered'||l==='shipment delivered'||l==='delivery done') return 'dto';
+    if(l==='rto delivered'||l==='return delivered') return 'rto';
+    if(
+      l==='out for delivery'||l==='ofd'||
+      l.includes('out for delivery')||
+      l.includes('in transit')||l.includes('intransit')||
+      l.includes('dispatch for rto')||
+      l.includes('dispatched for rto')||
+      l.includes('rto initiated')||
+      l.includes('rto in transit')
+    ) return 'dispatched';
+
+    // Everything else = PENDING
     return 'pending';
   }
   const parsed=rows.map((r,i)=>({
@@ -778,10 +813,10 @@ function setFilter(f){
   focusedIdx=-1;
   refreshAll();
 }
-function isPending(s){ return s==='pending'||s==='not attempted'||s==='undelivered'||s==='failed delivery'||s==='out for delivery'||(!isDisp(s)&&!isRTO(s)&&!isDTO(s)); }
-function isDisp(s){ return s==='dispatched'||s==='dispatch'||s==='in transit'||s==='intransit'; }
-function isRTO(s){ return s==='rto'||s==='return'||s==='rto initiated'||s==='rto delivered'; }
-function isDTO(s){ return s==='dto'||s==='delivered'||s==='delivery done'; }
+function isPending(s){ return s==='pending'; }
+function isDisp(s){ return s==='dispatched'; }
+function isRTO(s){ return s==='rto'; }
+function isDTO(s){ return s==='dto'; }
 
 function visibleRows(){
   let rows=getRows();
@@ -1050,7 +1085,10 @@ function downloadExcel(){
   xlsxDownload(data,'POD Data','POD_');
 }
 function copyTable(){
-  const data=visibleRows(); if(!data.length){toast('No data','err');return;}
+  // If user has selected specific rows — copy only those
+  const selected=visibleRows().filter(r=>r.sel);
+  const data=selected.length>0 ? selected : visibleRows();
+  if(!data.length){toast('No data','err');return;}
   const s=sessions[activeKey]||{};
   const dsp=s.dsp||''; const fe=s.fe||''; const date=fmtDate(s.date||'');
 
@@ -1066,33 +1104,34 @@ function copyTable(){
     orderedData=sorted.flatMap(([,rows])=>rows);
   }
 
-  const cellSt='border:1px solid #CBD5E1;padding:5px 8px;text-align:center;vertical-align:middle;font-size:11pt;font-family:Calibri,Arial,sans-serif;';
-  let htm='<table style="border-collapse:collapse">';
+  // HTML table — WPS Office reads this and pastes with center alignment, no wrap
+  const cs='border:1px solid #CBD5E1;padding:4px 6px;text-align:center;vertical-align:middle;white-space:nowrap;font-size:10pt;font-family:Calibri,Arial,sans-serif;';
+  let htm='<table style="border-collapse:collapse;font-size:10pt;font-family:Calibri,Arial,sans-serif">';
   orderedData.forEach(function(r,idx){
-    const vals=[date,idx===0?dsp:'',r.waybill,r.client,r.order,r.remark||'',fe];
-    htm+='<tr>'+vals.map(function(v){return '<td style="'+cellSt+'">'+v+'</td>';}).join('')+'</tr>';
+    const vals=[date, idx===0?dsp:'', r.waybill, r.client, r.order, r.remark||'', fe];
+    htm+='<tr>'+vals.map(function(v){
+      return '<td style="'+cs+'">'+String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</td>';
+    }).join('')+'</tr>';
   });
   htm+='</table>';
 
+  // Plain fallback
   const TAB='\t'; const NL='\n';
-  const lines=orderedData.map(function(r,idx){
+  const plain=orderedData.map(function(r,idx){
     return [date,idx===0?dsp:'',r.waybill,r.client,r.order,r.remark||'',fe].join(TAB);
-  });
-  const plain=lines.join(NL);
+  }).join(NL);
 
-  // Try HTML clipboard first (gives auto-center in Excel desktop)
-  // Fall back to plain text (always works on Android)
-  function tryHtml(){
-    if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
-      return navigator.clipboard.write([new ClipboardItem({
-        'text/html':new Blob([htm],{type:'text/html'}),
-        'text/plain':new Blob([plain],{type:'text/plain'}),
-      })]).then(function(){toast('Copied! Paste in Excel — auto centered','ok');})
-         .catch(function(){_fbCopy(plain);});
-    }
-    return Promise.reject();
+  // Try HTML first (WPS supports it), fallback to plain
+  if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+    navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([htm],{type:'text/html'}),
+      'text/plain': new Blob([plain],{type:'text/plain'}),
+    })]).then(function(){
+      toast('Copied! Paste in WPS — auto centered','ok');
+    }).catch(function(){ _fbCopy(plain); });
+  } else {
+    _fbCopy(plain);
   }
-  tryHtml().catch(function(){_fbCopy(plain);});
 }
 
 function _fbCopy(txt){
