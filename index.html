@@ -266,7 +266,7 @@ td.tc{text-align:center}
     <div class="setup-row">
       <div class="setup-field">
         <label class="f-label" for="dspId">DSP ID</label>
-        <input class="f-input" type="text" id="dspId" placeholder="e.g. DLEC0001" autocomplete="off" oninput="autoSaveDebounce()">
+        <input class="f-input" type="number" id="dspId" placeholder="e.g. 1234567" autocomplete="off" inputmode="numeric" oninput="autoSaveDebounce()">
       </div>
       <div class="setup-field">
         <label class="f-label" for="feName">Field Executive (FE) Name</label>
@@ -434,7 +434,7 @@ let activeKey = null;   // currently viewed session key
 let statusFilter = 'all';
 let activeRemark = null;
 const REJ_KW = ['reject but intact','reject but','intact'];
-const LS_KEY = 'pod_tool_sessions_v1';
+const LS_KEY = 'pod_tool_sessions_v4';
 
 /* ══════════════════════════════════════
    INIT
@@ -454,6 +454,7 @@ function triggerFileInput(){
   fi.value = '';  // reset so same file can be re-uploaded
   fi.click();
 }
+// No localStorage used — memory only
 loadSessionsFromStorage();
 renderFEGrid();
 
@@ -473,59 +474,11 @@ function makeKey(fe, dsp){ return (fe+'__'+dsp).toLowerCase().replace(/\s+/g,'_'
    LOCAL STORAGE
 ══════════════════════════════════════ */
 function loadSessionsFromStorage(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(!raw){ sessions={}; return; }
-    const parsed=JSON.parse(raw);
-    // Detect compressed format (has 'f' key) vs old format (has 'fe' key)
-    const firstVal=Object.values(parsed)[0];
-    if(!firstVal){ sessions={}; return; }
-    if(firstVal.fe!==undefined){
-      // Old uncompressed format — use as-is
-      sessions=parsed;
-    } else {
-      // Compressed format — expand
-      sessions={};
-      Object.entries(parsed).forEach(([k,s])=>{
-        sessions[k]={
-          fe:s.f, dsp:s.d, date:s.t,
-          rows:(s.r||[]).map(r=>({
-            id:r.i, waybill:r.w, client:r.c,
-            order:r.o, status:r.s, remark:r.m,
-            isRej:r.j===1, sel:false
-          }))
-        };
-      });
-    }
-  } catch(e){ sessions={}; }
+  // No localStorage — always start fresh
+  sessions={};
 }
 function saveSessionsToStorage(){
-  try{
-    // Compress: store rows with short keys to save space
-    const compressed={};
-    Object.entries(sessions).forEach(([k,s])=>{
-      compressed[k]={
-        f:s.fe, d:s.dsp, t:s.date,
-        r:(s.rows||[]).map(r=>({
-          i:r.id, w:r.waybill, c:r.client,
-          o:r.order, s:r.status, m:r.remark,
-          j:r.isRej?1:0
-        }))
-      };
-    });
-    localStorage.setItem(LS_KEY, JSON.stringify(compressed));
-  } catch(e){
-    // If still full, try saving only current session
-    try{
-      if(activeKey&&sessions[activeKey]){
-        const s=sessions[activeKey];
-        const single={};
-        single[activeKey]={f:s.fe,d:s.dsp,t:s.date,r:(s.rows||[]).map(r=>({i:r.id,w:r.waybill,c:r.client,o:r.order,s:r.status,m:r.remark,j:r.isRej?1:0}))};
-        localStorage.setItem(LS_KEY, JSON.stringify(single));
-        toast('Storage limited — only current session saved. Use Download Excel for others.','err',5000);
-      }
-    } catch(e2){ toast('Storage full — use Download Excel to backup','err',5000); }
-  }
+  // No localStorage — data lives in memory only (no stale data issues)
 }
 
 /* ══════════════════════════════════════
@@ -590,16 +543,34 @@ function clearAllSessions(){
   const n=Object.keys(sessions).length;
   if(!n){toast('No sessions to clear','info');return;}
   if(!confirm('Clear ALL '+n+' FE sessions? This cannot be undone.')) return;
+
   sessions={};
   activeKey=null;
-  saveSessionsToStorage();
+  statusFilter='all';
+  activeRemark=null;
+  searchQuery='';
+
+  // Hide all data sections
   document.getElementById('mainSection').style.display='none';
-  document.getElementById('rowBadge').style.display='none';
-  renderFEGrid();
-  // reset inputs
+  const rb=document.getElementById('rowBadge'); if(rb) rb.style.display='none';
+  const uw=document.getElementById('uploadZoneWrap'); if(uw) uw.style.display='none';
+
+  // Clear table body so old data not visible
+  const mb=document.getElementById('mainBody'); if(mb) mb.innerHTML='';
+
+  // Reset counts to zero
+  ['cntAll','cntPend','cntDisp','cntRTO','cntDTO'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent='0';
+  });
+
+  // Reset inputs
   document.getElementById('feName').value='';
   document.getElementById('dspId').value='';
   document.getElementById('dateVal').valueAsDate=new Date();
+
+  // Re-render empty FE grid
+  renderFEGrid();
+
   toast('✓ All sessions cleared — ready for new day','ok',4000);
 }
 
@@ -688,9 +659,11 @@ function loadFile(file){
   if(!sessions[key]){
     sessions[key] = { fe, dsp, date:document.getElementById('dateVal').value, rows:[] };
   } else {
-    // Clear old rows — new file = fresh data
+    // Same FE+DSP — clear only this session's rows for fresh upload
     sessions[key].rows = [];
     sessions[key].date = document.getElementById('dateVal').value;
+    sessions[key].fe  = document.getElementById('feName').value.trim();
+    sessions[key].dsp = document.getElementById('dspId').value.trim();
   }
   activeKey = key;
   _pendingFile = file;
@@ -715,10 +688,47 @@ function detectSep(txt){
 }
 function parseXL(buf){
   try{
-    const wb=XLSX.read(buf,{type:'array',cellText:true,cellDates:true});
+    // Use cellText:true so XLSX gives us the exact text shown in cell
+    const wb=XLSX.read(buf,{type:'array',cellText:true,cellDates:true,cellNF:false});
     const ws=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
-    console.log('XL rows parsed:',rows.length, 'Sheet:',wb.SheetNames[0]);
+    const range=XLSX.utils.decode_range(ws['!ref']);
+
+    // Read header row
+    const headers=[];
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const cell=ws[XLSX.utils.encode_cell({r:range.s.r,c:C})];
+      headers.push(cell?String(cell.v||''):'');
+    }
+
+    // Read each row — for each cell use .w (formatted text) if available, else .v
+    const rows=[];
+    for(let R=range.s.r+1;R<=range.e.r;R++){
+      const obj={};
+      let hasData=false;
+      for(let C=range.s.c;C<=range.e.c;C++){
+        const cell=ws[XLSX.utils.encode_cell({r:R,c:C})];
+        if(cell){
+          // .w = formatted string (what Excel shows), .v = raw value
+          // For numbers: .w gives "41529E+12" but .v gives actual number
+          // So for numbers, convert .v to string manually without sci notation
+          let val='';
+          if(cell.t==='n'&&cell.v!==undefined){
+            // Number cell — convert without scientific notation
+            val=Number(cell.v).toFixed(0);
+          } else if(cell.w){
+            val=cell.w;
+          } else if(cell.v!==undefined){
+            val=String(cell.v);
+          }
+          obj[headers[C]]=val.trim();
+          if(val.trim()) hasData=true;
+        } else {
+          obj[headers[C]]='';
+        }
+      }
+      if(hasData) rows.push(obj);
+    }
+
     processRows(rows);
   }catch(e){toast('File error: '+e.message,'err');}
 }
@@ -745,7 +755,7 @@ function findKey(obj,names){
 function processRows(rows){
   if(!rows.length){toast('No data in file','err');return;}
   const s=rows[0];
-  const kW=findKey(s,['waybill','awb','awb number','awb_number','waybillno']);
+  const kW=findKey(s,['Waybill','waybill','awb','awb number','awb_number','waybillno']);
   const kC=findKey(s,['client','client name','clientname']);
   const kO=findKey(s,['order','order id','orderid','order_id','order no']);
   const kS=findKey(s,['currentstatus','current status','current_status','status']);
@@ -754,50 +764,42 @@ function processRows(rows){
   if(!kS){toast('Status column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err');return;}
 
   function normStatus(s){
-    const l=(s||'').trim().toLowerCase();
-    if(!l) return 'pending';
-
-    // Exact Delhivery status values (case-insensitive)
-    if(l==='dto') return 'dto';
-    if(l==='rto') return 'rto';
-    if(l==='dispatched'||l==='dispatch') return 'dispatched';
-    if(l==='pending') return 'pending';
-
-    // Extended matches for other possible values
-    if(l==='delivered'||l==='shipment delivered'||l==='delivery done') return 'dto';
-    if(l==='rto delivered'||l==='return delivered') return 'rto';
-    if(
-      l==='out for delivery'||l==='ofd'||
-      l.includes('out for delivery')||
-      l.includes('in transit')||l.includes('intransit')||
-      l.includes('dispatch for rto')||
-      l.includes('dispatched for rto')||
-      l.includes('rto initiated')||
-      l.includes('rto in transit')
-    ) return 'dispatched';
-
-    // Everything else = PENDING
-    return 'pending';
+    // ONLY use exact CurrentStatus value — ignore Remark column completely
+    switch((s||'').trim()){
+      case 'Pending':    return 'pending';
+      case 'Dispatched': return 'dispatched';
+      case 'RTO':        return 'rto';
+      case 'DTO':        return 'dto';
+      // lowercase variants
+      case 'pending':    return 'pending';
+      case 'dispatched': return 'dispatched';
+      case 'rto':        return 'rto';
+      case 'dto':        return 'dto';
+      default:           return 'pending'; // unknown = pending
+    }
   }
   const parsed=rows.map((r,i)=>({
     id:Date.now()+'_'+i,
-    waybill:String(r[kW]||'').trim(),
+    waybill:String(r[kW]||'').trim().replace(/\.0$/,''),  // remove .0 suffix from numbers
     client:String(r[kC]||'').trim(),
     order:String(r[kO]||'').trim(),
     status:normStatus(r[kS]),
     remark:String(r[kR]||'').trim(),
     isRej:isRej(String(r[kR]||'')),
     sel:false,
-  })).filter(r=>r.waybill&&r.waybill.length>3);
+  })).filter(r=>r.waybill&&r.waybill.trim()!==''&&r.waybill.trim()!=='undefined'&&r.waybill.trim()!=='null');
 
   if(!parsed.length){toast('No valid rows found','err');return;}
 
+  // Replace ONLY this session's rows — other FE sessions stay safe
   sessions[activeKey].rows = parsed;
   sessions[activeKey].date = document.getElementById('dateVal').value;
+  sessions[activeKey].fe = document.getElementById('feName').value.trim();
+  sessions[activeKey].dsp = document.getElementById('dspId').value.trim();
   saveSessionsToStorage();
   statusFilter='all'; activeRemark=null;
   viewSession(activeKey);
-  toast('✓ '+parsed.length+' rows loaded & saved','ok');
+  toast('✓ '+parsed.length+' rows loaded','ok');
 }
 
 /* ══════════════════════════════════════
@@ -1085,50 +1087,66 @@ function downloadExcel(){
   xlsxDownload(data,'POD Data','POD_');
 }
 function copyTable(){
-  // If user has selected specific rows — copy only those
-  const selected=visibleRows().filter(r=>r.sel);
-  const data=selected.length>0 ? selected : visibleRows();
-  if(!data.length){toast('No data','err');return;}
+  const data=visibleRows(); if(!data.length){toast('No data','err');return;}
+  const selected=data.filter(r=>r.sel);
+  const rows=selected.length>0?selected:data;
   const s=sessions[activeKey]||{};
   const dsp=s.dsp||''; const fe=s.fe||''; const date=fmtDate(s.date||'');
 
-  let orderedData=data;
-  if(statusFilter==='pending'&&activeRemark===null){
+  // Remark-group order for pending
+  let orderedRows=rows;
+  if(statusFilter==='pending'&&activeRemark===null&&!selected.length){
     const groups={};
-    data.forEach(r=>{const k=r.remark||'No Remark';if(!groups[k])groups[k]=[];groups[k].push(r);});
+    rows.forEach(r=>{const k=r.remark||'';if(!groups[k])groups[k]=[];groups[k].push(r);});
     const sorted=Object.entries(groups).sort((a,b)=>{
       const ar=isRej(a[0]),br=isRej(b[0]);
       if(ar&&!br)return 1;if(!ar&&br)return -1;
       return b[1].length-a[1].length;
     });
-    orderedData=sorted.flatMap(([,rows])=>rows);
+    orderedRows=sorted.flatMap(([,rs])=>rs);
   }
 
-  // HTML table — WPS Office reads this and pastes with center alignment, no wrap
-  const cs='border:1px solid #CBD5E1;padding:4px 6px;text-align:center;vertical-align:middle;white-space:nowrap;font-size:10pt;font-family:Calibri,Arial,sans-serif;';
+  // Cell styles
+  const cs='border:1px solid #CBD5E1;padding:4px 8px;text-align:center;vertical-align:middle;white-space:nowrap;font-size:10pt;font-family:Calibri,Arial,sans-serif;';
+  // AWB cell — mso-number-format:"@" forces WPS/Excel to treat as TEXT, not number
+  const awbCs=cs+'mso-number-format:"@";';
+
   let htm='<table style="border-collapse:collapse;font-size:10pt;font-family:Calibri,Arial,sans-serif">';
-  orderedData.forEach(function(r,idx){
-    const vals=[date, idx===0?dsp:'', r.waybill, r.client, r.order, r.remark||'', fe];
-    htm+='<tr>'+vals.map(function(v){
-      return '<td style="'+cs+'">'+String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</td>';
-    }).join('')+'</tr>';
+  htm+='<colgroup>'
+    +'<col style="width:82pt">'   // Date
+    +'<col style="width:90pt">'   // DSP ID
+    +'<col style="width:155pt">'  // AWB
+    +'<col style="width:140pt">'  // Client
+    +'<col style="width:155pt">'  // Order ID
+    +'<col style="width:155pt">'  // Remark
+    +'<col style="width:90pt">'   // FE Name
+    +'</colgroup>';
+
+  orderedRows.forEach(function(r,idx){
+    htm+='<tr>'
+      +'<td style="'+cs+'">'+date+'</td>'
+      +'<td style="'+cs+'">'+(idx===0?dsp:'')+'</td>'
+      // AWB — forced as text string, no scientific notation
+      +'<td style="'+awbCs+'">'+String(r.waybill)+'</td>'
+      +'<td style="'+cs+'">'+String(r.client||'')+'</td>'
+      +'<td style="'+cs+'">'+String(r.order||'')+'</td>'
+      +'<td style="'+cs+'">'+String(r.remark||'')+'</td>'
+      +'<td style="'+cs+'">'+fe+'</td>'
+      +'</tr>';
   });
   htm+='</table>';
 
-  // Plain fallback
-  const TAB='\t'; const NL='\n';
-  const plain=orderedData.map(function(r,idx){
+  const TAB='\t';const NL='\n';
+  const plain=orderedRows.map(function(r,idx){
     return [date,idx===0?dsp:'',r.waybill,r.client,r.order,r.remark||'',fe].join(TAB);
   }).join(NL);
 
-  // Try HTML first (WPS supports it), fallback to plain
   if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
     navigator.clipboard.write([new ClipboardItem({
-      'text/html': new Blob([htm],{type:'text/html'}),
-      'text/plain': new Blob([plain],{type:'text/plain'}),
-    })]).then(function(){
-      toast('Copied! Paste in WPS — auto centered','ok');
-    }).catch(function(){ _fbCopy(plain); });
+      'text/html':new Blob([htm],{type:'text/html'}),
+      'text/plain':new Blob([plain],{type:'text/plain'}),
+    })]).then(function(){toast('Copied! Paste in WPS','ok');})
+       .catch(function(){_fbCopy(plain);});
   } else {
     _fbCopy(plain);
   }
