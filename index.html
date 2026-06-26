@@ -192,7 +192,7 @@ td.tc{text-align:center}
 .dsp-name{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--yellow)}
 .dsp-cnt{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.5);color:#FCD34D;border-radius:10px;padding:2px 12px;font-size:10.5px;font-weight:800;letter-spacing:.2px}
 .dsp-fe{font-size:10.5px;color:#94A3B8;margin-left:auto}
-.awb-cell{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--blue);font-weight:600}
+.awb-cell{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--blue);font-weight:600;cursor:pointer;user-select:none}.awb-cell:hover{color:#16a34a;text-decoration:underline}
 .remark-pill{display:inline-block;padding:2px 9px;border-radius:6px;font-size:10.5px;font-weight:600;background:var(--amber-lt);color:#92400E;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;border:1px solid #FDE68A}
 .remark-pill.rej{background:var(--red-lt);color:var(--red2);border:1px solid var(--red-mid)}
 .del-btn{width:26px;height:26px;border:none;background:none;color:#D1D5DB;cursor:pointer;border-radius:6px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
@@ -900,7 +900,7 @@ function _buildRow(r, dsp, fe, globalIdx){
     <td class="tc"><input type="checkbox" ${r.sel?'checked':''} onchange="toggleRow('${r.id}',this)"></td>
     <td class="tc"><button class="del-btn" onclick="deleteRow('${r.id}')" title="Delete">&#10005;</button></td>
     <td>${dspCell}</td>
-    <td><span class="awb-cell">${esc(r.waybill)}</span></td>
+    <td><span class="awb-cell" title="Click to copy AWB" onclick="copyAwb(this,'${esc(String(r.waybill))}')">${esc(String(r.waybill))}</span></td>
     <td style="font-size:12px;color:var(--text2)">${esc(r.client)}</td>
     <td style="font-size:11.5px;color:var(--text2)">${esc(r.order)}</td>
     <td style="font-size:11.5px;color:var(--text2)">${esc(r.remark)||'&#8212;'}</td>
@@ -1150,6 +1150,34 @@ function copyTable(){
   } else {
     _fbCopy(plain);
   }
+}
+
+function copyAwb(el, awb){
+  // Copy just the AWB number
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(awb)
+      .then(function(){
+        // Flash green to confirm
+        const orig=el.style.color;
+        el.style.color='#16a34a';
+        el.style.fontWeight='800';
+        setTimeout(function(){el.style.color=orig;el.style.fontWeight='';},800);
+        toast('AWB copied: '+awb,'ok',2000);
+      })
+      .catch(function(){_fbCopyText(awb);});
+  } else {
+    _fbCopyText(awb);
+  }
+}
+function _fbCopyText(txt){
+  const ta=document.createElement('textarea');
+  ta.value=txt;
+  ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus();ta.select();ta.setSelectionRange(0,txt.length);
+  try{document.execCommand('copy');toast('AWB copied','ok',2000);}
+  catch(e){toast('Copy failed','err');}
+  document.body.removeChild(ta);
 }
 
 function _fbCopy(txt){
