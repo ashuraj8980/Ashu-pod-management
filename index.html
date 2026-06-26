@@ -764,30 +764,30 @@ function processRows(rows){
   if(!kS){toast('Status column not found. Cols: '+Object.keys(s).slice(0,6).join(', '),'err');return;}
 
   function normStatus(s){
-    // ONLY use exact CurrentStatus value — ignore Remark column completely
-    switch((s||'').trim()){
-      case 'Pending':    return 'pending';
-      case 'Dispatched': return 'dispatched';
-      case 'RTO':        return 'rto';
-      case 'DTO':        return 'dto';
-      // lowercase variants
-      case 'pending':    return 'pending';
-      case 'dispatched': return 'dispatched';
-      case 'rto':        return 'rto';
-      case 'dto':        return 'dto';
-      default:           return 'pending'; // unknown = pending
-    }
+    const v=(s||'').trim().toLowerCase();
+    if(v==='pending')    return 'pending';
+    if(v==='dispatched'||v==='dispatch') return 'dispatched';
+    if(v==='rto')        return 'rto';
+    if(v==='dto'||v==='delivered') return 'dto';
+    // Return null for unknown — these rows will be DROPPED, not counted as pending
+    return null;
   }
-  const parsed=rows.map((r,i)=>({
-    id:Date.now()+'_'+i,
-    waybill:String(r[kW]||'').trim().replace(/\.0$/,''),  // remove .0 suffix from numbers
-    client:String(r[kC]||'').trim(),
-    order:String(r[kO]||'').trim(),
-    status:normStatus(r[kS]),
-    remark:String(r[kR]||'').trim(),
-    isRej:isRej(String(r[kR]||'')),
-    sel:false,
-  })).filter(r=>r.waybill&&r.waybill.trim()!==''&&r.waybill.trim()!=='undefined'&&r.waybill.trim()!=='null');
+  const parsed=rows.map((r,i)=>{
+    const wb=String(r[kW]||'').trim().replace(/\.0$/,'');
+    const st=normStatus(r[kS]);
+    if(!wb||wb==='undefined'||wb==='null'||wb.length<5) return null; // must have valid AWB
+    if(!st) return null; // must have known status — no blank/unknown rows
+    return {
+      id:Date.now()+'_'+i,
+      waybill:wb,
+      client:String(r[kC]||'').trim(),
+      order:String(r[kO]||'').trim(),
+      status:st,
+      remark:String(r[kR]||'').trim(),
+      isRej:isRej(String(r[kR]||'')),
+      sel:false,
+    };
+  }).filter(r=>r!==null);
 
   if(!parsed.length){toast('No valid rows found','err');return;}
 
@@ -867,21 +867,28 @@ function renderChips(){
   if(statusFilter!=='pending'){rc.style.display='none';return;}
   const pend=getRows().filter(r=>isPending(r.status));
   if(!pend.length){rc.style.display='none';return;}
+  // Count by actual remark value — use '' for empty remark (display as "No Remark")
   const counts={};
-  pend.forEach(r=>{const k=r.remark||'No Remark';counts[k]=(counts[k]||0)+1;});
+  pend.forEach(r=>{
+    const k=r.remark; // keep actual value — '' for blank
+    counts[k]=(counts[k]||0)+1;
+  });
   const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   document.getElementById('chipsWrap').innerHTML=sorted.map(([lbl,cnt])=>{
-    const rej=isRej(lbl),act=activeRemark===lbl;
+    const displayLbl=lbl||'No Remark';
+    const rej=isRej(lbl);
+    const act=activeRemark===lbl;
     const safe=lbl.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     return `<div class="chip${rej?' rej':''}${act?' active':''}" onclick="clickChip('${safe}')">
-      <span class="chip-lbl" title="${esc(lbl)}">${esc(lbl)||'No Remark'}</span>
+      <span class="chip-lbl" title="${esc(displayLbl)}">${esc(displayLbl)}</span>
       <span class="chip-cnt">${cnt} pkt</span>
     </div>`;
   }).join('');
   rc.style.display='block';
-  document.getElementById('rcSub').textContent=activeRemark?`Showing: "${activeRemark}"`:' Click any remark chip to filter';
-  document.getElementById('rcBack').style.display=activeRemark?'inline-flex':'none';
+  document.getElementById('rcSub').textContent=activeRemark!==null?(activeRemark?`Showing: "${activeRemark}"`:'Showing: No Remark'):'Click any remark chip to filter';
+  document.getElementById('rcBack').style.display=activeRemark!==null?'inline-flex':'none';
 }
+// clickChip uses exact remark value ('' for no remark) — filter in visibleRows matches exactly
 function clickChip(r){activeRemark=activeRemark===r?null:r;refreshAll();}
 function clearRemarkFilter(){activeRemark=null;refreshAll();}
 function onSearch(){
