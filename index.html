@@ -773,7 +773,12 @@ function processRows(rows){
     return null;
   }
   const parsed=rows.map((r,i)=>{
-    const wb=String(r[kW]||'').trim().replace(/\.0$/,'');
+    // Convert AWB to full string — handles scientific notation like 5.5549E+13
+    let wb = String(r[kW]||'').trim();
+    if(/^[\d.]+[eE][+\-]?\d+$/.test(wb)){
+      try{ wb = String(Math.round(Number(wb))); }catch(ex){}
+    }
+    wb = wb.replace(/\.0$/,'');
     const st=normStatus(r[kS]);
     if(!wb||wb==='undefined'||wb==='null'||wb.length<5) return null; // must have valid AWB
     if(!st) return null; // must have known status — no blank/unknown rows
@@ -1059,21 +1064,36 @@ function buildRows(data, includeHeader=true){
   const out=[];
   if(includeHeader) out.push(['Date','DSP ID','AWB Number','Client','Order ID','Remark','FE Name']);
   // DSP only on first data row
-  data.forEach((r,idx)=>out.push([date, idx===0?dsp:'', r.waybill, r.client, r.order, r.remark, fe]));
+  // AWB stored as STRING with leading apostrophe trick — prevents scientific notation
+  data.forEach((r,idx)=>{
+    // Force AWB as text cell — XLSX text type 't':'s'
+    out.push([date, idx===0?dsp:'', {v:r.waybill, t:'s'}, r.client, r.order, r.remark, fe]);
+  });
   return out;
 }
 function applyStyle(ws,rows){
-  ws['!cols']=[{wch:13},{wch:14},{wch:22},{wch:18},{wch:18},{wch:34},{wch:18}];
+  // Column widths — AWB wider to fit full number
+  ws['!cols']=[{wch:13},{wch:14},{wch:26},{wch:20},{wch:20},{wch:34},{wch:18}];
   const range=XLSX.utils.decode_range(ws['!ref']);
   for(let R=range.s.r;R<=range.e.r;R++){
     for(let C=range.s.c;C<=range.e.c;C++){
       const addr=XLSX.utils.encode_cell({r:R,c:C});
-      if(!ws[addr])ws[addr]={t:'z',v:''};
-      if(!ws[addr].s)ws[addr].s={};
-      ws[addr].s.alignment={horizontal:'center',vertical:'center',wrapText:true};
+      if(!ws[addr]) ws[addr]={t:'z',v:''};
+      if(!ws[addr].s) ws[addr].s={};
+      // All cells: font size 11, center aligned
+      ws[addr].s.font = R===0
+        ? {bold:true, color:{rgb:'FFFFFF'}, sz:11, name:'Calibri'}
+        : {sz:11, name:'Calibri'};
+      ws[addr].s.alignment = {horizontal:'center', vertical:'center', wrapText:false};
       if(R===0){
         ws[addr].s.fill={patternType:'solid',fgColor:{rgb:'1F2937'}};
-        ws[addr].s.font={bold:true,color:{rgb:'FFFFFF'},sz:11};
+      }
+      // AWB column (C===2) — force text format so no scientific notation
+      if(C===2 && R>0){
+        ws[addr].t = 's'; // string type
+        ws[addr].s.alignment = {horizontal:'center', vertical:'center', wrapText:false};
+        // Number format: @ means text
+        ws[addr].z = '@';
       }
     }
   }
